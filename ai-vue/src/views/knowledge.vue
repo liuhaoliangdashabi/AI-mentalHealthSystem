@@ -5,7 +5,7 @@
                 <el-button type="primary">新增</el-button>
             </template>
         </PageHead>
-        <TableSearch :formItem="formItem" @search="handleSearch"></TableSearch>
+        <TableSearch :formItem="formItem" @search="handleSearch"/>
     </div>
 </template>
 
@@ -20,6 +20,6 @@ const formItem=[
     ]}
 ]
 const handleSearch=()=>{
-
+    
 }
 </script>

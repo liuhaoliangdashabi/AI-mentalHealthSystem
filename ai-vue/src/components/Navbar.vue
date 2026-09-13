@@ -4,7 +4,7 @@
             <el-button @click="handleCollapse">
                 <el-icon><Expand/></el-icon>
             </el-button>
-            <p class="page-title">导航栏</p>
+            <p class="page-title">{{route.meta.title}}</p>
         </div>
         <div class="flex-box">
             <el-dropdown @command="handleCommand">
@@ -13,7 +13,9 @@
                     <el-icon><ArrowDown/></el-icon>
                 </div>
                 <template #dropdown>
-                    <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                    <el-dropdown-menu>
+                        <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                    </el-dropdown-menu>
                 </template>
             </el-dropdown>
         </div>
@@ -22,7 +24,11 @@
 
 <script setup>
 import {ref} from 'vue'
+import {useRoute} from 'vue-router'
 import { useAdminStore } from '@/stores/admin'
+
+const route=useRoute()
+
 const handleCommand=(command)=>{
     console.log(command)
     if(command==='logout'){

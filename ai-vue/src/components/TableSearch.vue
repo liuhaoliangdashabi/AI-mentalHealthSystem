@@ -1,31 +1,31 @@
 <template>
-    <el-form :model="formData">
-        <template v-for="item in formItem" :key="item.prop">
-            <el-form-item :label="item.label" :prop="itme.prop">
-                <component v-model="formData[item.prop]" :is="isComp(item.comp)" :placeholder="item.placeholder">
-                    <template v-if="item.comp==='select'">
-                        <el-option label="全部" value=""></el-option>
-                        <el-option 
-                            v-for="opt in item.options"
-                            :key="opt.value"
-                            :label="opt.label"
-                            :value="opt.value"/>
-                    </template>
-                </component>
-            </el-form-item>
-        </template>
-        <el-button type="primary" @click="handleSearch">查询</el-button>
-        <el-button type="info" @click="handleReset">重置</el-button>
+    <el-form ref="ruleFormRef" :model="formData">
+        <el-row :gutter="24">
+            <template v-for="item in formItemAttrs" :key="item.prop">
+                <el-col v-bind="item.col">
+                    <el-form-item :label="item.label" :prop="item.prop">
+                        <component v-model="formData[item.prop]" :is="isComp(item.comp)" :placeholder="item.placeholder">
+                            <template v-if="item.comp=='select'">
+                                <el-option 
+                                    v-for="opt in item.options"
+                                    :key="opt.value"
+                                    :label="opt.label"
+                                    :value="opt.value"></el-option>
+                            </template>
+                        </component>
+                    </el-form-item>
+                </el-col>
+            </template>
+        </el-row>
+        <el-row>
+            <el-button type="primary" @click="handleSearch">查询</el-button>
+            <el-button type="info" @click="handleReset(ruleFormRef)">重置</el-button>
+        </el-row>
     </el-form>
 </template>
 
 <script setup>
-import {ref,reactive} from 'vue'
-
-//表单数据
-const formData=reactive({})
-
-
+import {ref,reactive,computed} from 'vue'
 
 const props=defineProps({
     formItem:{
@@ -33,16 +33,31 @@ const props=defineProps({
         default:()=>[]
     }
 })
+const emit=defineEmits(['search'])
+
+const formItemAttrs=computed(()=>{
+    const {formItem}=props
+    formItem.forEach(item=>{
+        item.col={xs:24,sm:12,md:8,lg:6,xl:6}
+    })
+    return formItem
+})
+
+//表单数据
+const ruleFormRef=ref()
+const formData=reactive({})
 const isComp=(comp)=>{
     return {
         input:'elInput',
         select:'elSelect'
     }[comp]
 }
-const handleSearch=()=>{
-
+const handleSearch=(formData)=>{
+    emit('查询参数',formData)
 }
-const handleReset=()=>{
-
+const handleReset=(formEl)=>{
+    if(!formEl)return
+    formEl.resetFields()
+    emit('查询参数',formData)
 }
 </script>
