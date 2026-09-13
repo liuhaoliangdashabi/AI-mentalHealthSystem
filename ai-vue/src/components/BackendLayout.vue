@@ -3,8 +3,8 @@
     <el-container class="main-container">
       <SideBar/>
       <el-container>
-        <Navbar/>
-        <router-view/>
+        <el-header><Navbar/></el-header>
+        <el-main class="main-content"><router-view class="content-container"/></el-main>
       </el-container>
     </el-container>
   </div>
@@ -18,8 +18,15 @@ import Navbar from './Navbar.vue'
 <style lang="scss" scoped>
 .backend-layout{
     height:100vh;
+    .el-header{
+      height:74px !important;
+    }
     .main-container{
         height:100%;
+        .content-container{
+          padding:20px;
+          background-color:#fff;
+        }
     }
 }
 

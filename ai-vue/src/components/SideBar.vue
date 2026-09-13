@@ -1,12 +1,14 @@
 <template>
-   <el-aside width="264px">
+   <el-aside :width="isCollapse?'264px':'0px'">
      <el-menu
+        :collapse="isCollapse"
+        :collapse-transition="false"
         default-active="2"
         class="menu-style"
       >
         <div class="brand">
             <el-image style="width:40px;height:40px;" :src="iconUrl" alt="logo"/>
-            <div class="info-card">
+            <div v-show="!isCollapse" class="info-card">
                 <h1 class="brand-title">心理健康AI助手</h1>
                 <p class="brand-subtitle">管理后台</p>
             </div>
@@ -18,6 +20,21 @@
       </el-menu>
    </el-aside>
 </template>
+
+<script setup>
+import {computed} from 'vue'
+import {useRouter} from 'vue-router'
+import {useAdminStore} from '@/stores/admin'
+const router=useRouter()
+const iconUrl=new URL('@/assets/机器人.png',import.meta.url).href
+
+const isCollapse=computed(()=>useAdminStore().isCollapse)
+const selectMenu=(key)=>{
+    console.log(key)
+    const currentRoute=router.options.routes[0]
+    router.push(`${currentRoute.path}/${key.index}`)
+}
+</script>
 
 
 <style lang="scss" scoped>
@@ -48,16 +65,3 @@
 }
 
 </style>
-
-
-<script setup>
-import {useRouter} from 'vue-router'
-const router=useRouter()
-
-const iconUrl=new URL('@/assets/机器人.png',import.meta.url).href
-const selectMenu=(key)=>{
-    console.log(key)
-    const currentRoute=router.options.routes[0]
-    `${currentRoute.path}/${key.index}`
-}
-</script>
