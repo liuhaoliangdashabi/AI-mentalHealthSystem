@@ -53,11 +53,11 @@ const isComp=(comp)=>{
     }[comp]
 }
 const handleSearch=(formData)=>{
-    emit('查询参数',formData)
+    emit('search',formData)
 }
 const handleReset=(formEl)=>{
     if(!formEl)return
     formEl.resetFields()
-    emit('查询参数',formData)
+    emit('search',formData)
 }
 </script>

@@ -5,6 +5,7 @@ const backendRoutes=[
     {
         path:'/back',
         component:BackendLayout,
+        redirect:'/back/dashboard',
         children:[
             {
                 path:'dashboard',
