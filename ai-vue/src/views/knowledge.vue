@@ -2,7 +2,7 @@
     <div>
         <PageHead title="知识文章">
             <template #buttons>
-                <el-button type="primary">新增</el-button>
+                <el-button @click="dialogVisible=true" type="primary">新增</el-button>
             </template>
         </PageHead>
         <TableSearch :formItem="formItem" @search="handleSearch"/>
@@ -41,6 +41,7 @@
             :total="pagination.total"
             @change="handleChange"
             />
+            <ArticleDialog v-model:modelValue="dialogVisible" :categories="categories"/>
     </div>
 </template>
 
@@ -49,6 +50,7 @@ import {ref,reactive,onMounted} from 'vue'
 import PageHead from '@/components/PageHead.vue'
 import TableSearch from '@/components/TableSearch.vue';
 import {categoryTree,articlePage} from '@/api/admin'
+import ArticleDialog from '@/components/ArticleDialog.vue'
 
 const formItem=[
     {comp:'input',prop:'title',label:'标题',placeholder:'请输入文章标题'},
@@ -68,6 +70,8 @@ const handleChange=(page)=>{
 const categoryMap=reactive([])
 const categories=ref([])
 const tableData=ref([])
+const dialogVisible=ref(false)
+
 onMounted(async()=>{
     const data=await categoryTree()
     console.log(data,'分类树')
