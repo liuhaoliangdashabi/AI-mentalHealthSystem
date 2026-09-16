@@ -28,7 +28,7 @@ service.interceptors.response.use(
                     ElMessage.error(data.msg||'登陆过期，请重新登录')
                     localStorage.removeItem('token')
                     localStorage.removeItem('userInfo')
-                    window.location.href='auth/login'
+                    window.location.href='/auth/login'
                 }else{
                     ElMessage.error(data.msg||'登录过期，请重新登录')
                     return Promise.reject('网络请求失败')

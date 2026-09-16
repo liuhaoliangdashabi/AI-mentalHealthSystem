@@ -52,7 +52,7 @@ const isComp=(comp)=>{
         select:'elSelect'
     }[comp]
 }
-const handleSearch=(formData)=>{
+const handleSearch=()=>{
     emit('search',formData)
 }
 const handleReset=(formEl)=>{

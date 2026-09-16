@@ -1,6 +1,6 @@
 <template>
     <el-dialog
-        title="文章详情"
+        :title="isEdit.value?'编辑文章':'新增文章'"
         v-model="dialogVisible"
         width="50%"
         @close="handleClose"
@@ -47,15 +47,35 @@
                     </div>
                 </div>
             </el-form-item>
+            <el-form-item labe="文章内容" prop="content">
+                <rich-text-editor
+                    v-model="formData.content"
+                    placeholder="请输入文章内容，支持富文本格式\n\n可以使用加粗、斜体、列表、标题等格式来丰富文章内容"
+                    :maxCharCount="5000"
+                    @change="handleContentChange"
+                    @created="handleEditorCreated"
+                    min-height="300px"/>
+            </el-form-item>
         </el-form>
+        <div v-show="btnPreview">
+            <h3>内容预览</h3>
+            <div v-html="formData.content"></div>
+        </div>
+        <template #footer>
+            <el-button @click="btnPreview=!btnPreview">{{ btnPreview?'隐藏预览':'预览效果' }}</el-button>
+            <el-button @click="handleClose">取消</el-button>
+            <el-button @click="handleSubmit" type="primary" :loading="loading">{{isEdit?'更新':'创建'}}</el-button>
+        </template>
     </el-dialog>
 </template>
 
 <script setup>
-import {ref,reactive,computed,onMounted} from 'vue'
+import {ref,reactive,computed,nextTick} from 'vue'
 import {ElMessage} from 'element-plus'
-import {uploadFile} from '@/api/admin'
+import {uploadFile,createArticle} from '@/api/admin'
 import {fileBaseUrl} from '@/config/index.js'
+import RichTextEditor from '@/components/RichTextEditor.vue'
+const businessId=ref(null)
 const props=defineProps({
     modelValue:{
         type:Boolean,
@@ -64,9 +84,13 @@ const props=defineProps({
     categories:{
         type:Array,
         default:()=>[]
+    },
+    article:{
+        type:Object,
+        default:null//弹窗中要创建字段判断新增/编辑
     }
 })
-const emit=defineEmits(['update:modelValue'])
+const emit=defineEmits(['update:modelValue','success'])
 const dialogVisible=computed({
     get(){
         return props.modelValue
@@ -75,6 +99,7 @@ const dialogVisible=computed({
         emit('update:modelValue',val)
     }
 })
+const isEdit=computed(()=>!!props.article?.id)
 
 const formData=reactive({
     title:"",
@@ -83,6 +108,7 @@ const formData=reactive({
     categoryId:1,
     summary:"",
     tags:"",
+    tagArray:[],
     id:""
 })
 const rules=reactive({
@@ -92,6 +118,10 @@ const rules=reactive({
     ],
     categoryId:[
         {required:true,message:'请选择分类',trigger:'change'}
+    ],
+    content:[
+        {required:true,message:'请输入文章内容',trigger:'blur'},
+        {max:5000,message:'文章内容最多5000个字符',trigger:'blur'}
     ]
 })
 const handleClose=()=>{
@@ -119,7 +149,7 @@ const beforeUpload=(file)=>{
 }
 const handleUploadRequest=async({file})=>{//解构回调参数中的file
     //UUID生成
-    const businessId=crypto.randomUUID()
+    businessId.value=crypto.randomUUID()
     const fileRes=await uploadFile(file,{
         businessId:businessId
     })
@@ -131,6 +161,45 @@ const handleUploadRequest=async({file})=>{//解构回调参数中的file
 const handleRemove=()=>{
     imgUrl.value=''
     formData.coverImage=''
+}
+
+//富文本
+const handleContentChange=(data)=>{
+    formData.content=data.html
+}
+//富文本创建时
+const editorInstance=ref(null)
+const handleEditorCreated=(editor)=>{
+    editorInstance.value=editor
+    if(formData.content){
+        nextTick(()=>{
+            editorInstance.value.setHtml(formData.content)
+        })
+    }
+}
+
+const btnPreview=ref(false)
+
+const formRef=ref()
+const loading=ref(false)
+const handleSubmit=()=>{
+    if(!formRef.value) return
+    formRef.value.validate((valid,fields)=>{
+        if(valid){
+            loading.value=true
+        }
+        console.log(formData,'formData')
+        const submitData={...formData,tags:formData.tagArray.join(',')}
+        submitData.id=businessId.value
+        delete submitData.tagArray
+        createArticle(submitData).then(res=>{
+            loading.value=false
+            emit('success')
+            ElMessage.success('创建成功')
+            dialogVisible.value=false
+            Object.assign(formData,{title:"",content:"",coverImage:"",categoryId:1,summary:"",tags:"",tagArray:[],id:""})
+        })
+    })
 }
 </script>
 
