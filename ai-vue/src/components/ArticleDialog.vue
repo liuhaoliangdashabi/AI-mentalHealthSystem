@@ -1,6 +1,6 @@
 <template>
     <el-dialog
-        :title="isEdit.value?'编辑文章':'新增文章'"
+        :title="isEdit?'编辑文章':'新增文章'"
         v-model="dialogVisible"
         width="50%"
         @close="handleClose"
@@ -70,9 +70,9 @@
 </template>
 
 <script setup>
-import {ref,reactive,computed,nextTick} from 'vue'
+import {ref,reactive,computed,nextTick,watch} from 'vue'
 import {ElMessage} from 'element-plus'
-import {uploadFile,createArticle} from '@/api/admin'
+import {uploadFile,createArticle,updateArticle} from '@/api/admin'
 import {fileBaseUrl} from '@/config/index.js'
 import RichTextEditor from '@/components/RichTextEditor.vue'
 const businessId=ref(null)
@@ -101,6 +101,16 @@ const dialogVisible=computed({
 })
 const isEdit=computed(()=>!!props.article?.id)
 
+watch(()=>props.article,(newVal)=>{
+    if(newVal){
+        nextTick(()=>{
+            Object.assign(formData,newVal)
+            businessId.value=newVal.id
+            imgUrl.value=fileBaseUrl+newVal.coverImage
+        })
+        
+    }
+})
 const formData=reactive({
     title:"",
     content:"",
@@ -125,7 +135,11 @@ const rules=reactive({
     ]
 })
 const handleClose=()=>{
-
+    emit('update:modelValue',false)
+    businessId.value=null
+    handleRemove()
+    formData.tagArray=[]
+    formRef.value.resetFields()
 }
 const commonTags = [
   '情绪管理', '焦虑', '抑郁', '压力', '睡眠', 
@@ -192,13 +206,22 @@ const handleSubmit=()=>{
         const submitData={...formData,tags:formData.tagArray.join(',')}
         submitData.id=businessId.value
         delete submitData.tagArray
-        createArticle(submitData).then(res=>{
-            loading.value=false
-            emit('success')
-            ElMessage.success('创建成功')
-            dialogVisible.value=false
-            Object.assign(formData,{title:"",content:"",coverImage:"",categoryId:1,summary:"",tags:"",tagArray:[],id:""})
-        })
+        if(!isEdit){
+            submitData.id=businessId.value
+            createArticle(submitData).then(res=>{
+                loading.value=false
+                emit('success')
+                ElMessage.success('创建成功')
+                dialogVisible.value=false
+                Object.assign(formData,{title:"",content:"",coverImage:"",categoryId:1,summary:"",tags:"",tagArray:[],id:""})
+            })
+        }else{
+            updateArticle(props.article.id,submitData).then(res=>{
+                loading.value=false
+                emit('success')
+            })
+        }
+        
     })
 }
 </script>

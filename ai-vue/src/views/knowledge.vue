@@ -2,7 +2,7 @@
     <div>
         <PageHead title="知识文章">
             <template #buttons>
-                <el-button @click="dialogVisible=true" type="primary">新增</el-button>
+                <el-button @click="handleEdit({})" type="primary">新增</el-button>
             </template>
         </PageHead>
         <TableSearch :formItem="formItem" @search="handleSearch"/>
@@ -29,18 +29,18 @@
             <el-table-column label="操作" width="170" fixed="right">
                 <template #default="scope">
                     <el-button @click="handleEdit(scope.row)" class="geren-btn-minpadding" text type="primary">编辑</el-button>
-                    <el-button class="geren-btn-minpadding" v-if="scope.row.status===0||scope.row.status===2" text type="success">发布</el-button>
-                    <el-button class="geren-btn-minpadding" v-if="scope.row.status===1" text type="warning">下线</el-button>
-                    <el-button class="geren-btn-minpadding" text type="danger">删除</el-button>
+                    <el-button @click="handlePublish(scope.row)" class="geren-btn-minpadding" v-if="scope.row.status===0||scope.row.status===2" text type="success">发布</el-button>
+                    <el-button @click="handleUnpublish(scope.row)" class="geren-btn-minpadding" v-if="scope.row.status===1" text type="warning">下线</el-button>
+                    <el-button @click="handleDelete(scope.row)" class="geren-btn-minpadding" text type="danger">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
         <el-pagination
+            style="margin-top:15px"
             :page-size="pagination.size"
             layout="prev,pager,next"
             :total="pagination.total"
-            @change="handleChange"
-            />
+            @change="handleChange"/>
             <ArticleDialog v-model:modelValue="dialogVisible" :article="currentArticle" :categories="categories" @success="handleSuccess"/>
     </div>
 </template>
@@ -49,8 +49,10 @@
 import {ref,reactive,onMounted} from 'vue'
 import PageHead from '@/components/PageHead.vue'
 import TableSearch from '@/components/TableSearch.vue';
-import {categoryTree,articlePage,getArticleDetail} from '@/api/admin'
+import {categoryTree,articlePage,getArticleDetail,changeArticleStatus} from '@/api/admin'
+import {deleteArticle} from '@/api/admin'
 import ArticleDialog from '@/components/ArticleDialog.vue'
+import {ElMessage,ElMessageBox} from 'element-plus'
 
 const formItem=[
     {comp:'input',prop:'title',label:'标题',placeholder:'请输入文章标题'},
@@ -73,15 +75,68 @@ const tableData=ref([])
 const dialogVisible=ref(false)
 const currentArticle=ref(null)
 const handleSuccess=()=>{
+    dialogVisible.value=false
     handleSearch()
 }
 const handleEdit=(row)=>{
-    if(!row.id)return
-    getArticleDetail(row.id).then(res=>{
-        currentArticle.value=res
+    if(row.id){//编辑
+        getArticleDetail(row.id).then(res=>{
+          currentArticle.value=res
+          dialogVisible.value=true
+        })
+    }else{//新增
+        currentArticle.value=null
         dialogVisible.value=true
+    }
+}
+
+const handlePublish=(row)=>{
+    ElMessageBox.confirm(
+        `确认发布文章${row.title}吗？`,
+        '确认',{
+            confirmButtonText:'确认发布',
+            cancelButtonText:'取消',
+            type:'warning'
+        }
+    ).then(()=>{
+        changeArticleStatus(row.id,{status:1}).then(res=>{
+            ElMessage.success('发布成功')
+            handleSearch()
+        })
     })
 }
+const handleUnpublish=(row)=>{
+    ElMessageBox.confirm(
+        `确认下线文章${row.title}吗？`,
+        '确认',{
+            confirmButtonText:'确认下线',
+            cancelButtonText:'取消',
+            type:'warning'
+        }
+    ).then(()=>{
+        changeArticleStatus(row.id,{status:2}).then(res=>{
+            ElMessage.success('下线成功')
+            handleSearch()
+        })
+    })
+}
+
+const handleDelete=(row)=>{
+    ElMessageBox.confirm(
+        `确认删除${row.title}吗？`,
+        '确认',{
+            confirmButtonText:'确认删除',
+            cancelButtonText:'取消',
+            type:'danger'
+        }
+    ).then(()=>{
+        deleteArticle(row.id).then(res=>{
+            ElMessage.success('删除成功')
+            handleSearch()
+        })
+    })
+}
+
 onMounted(async()=>{
     const data=await categoryTree()
     console.log(data,'分类树')
