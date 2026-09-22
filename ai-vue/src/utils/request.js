@@ -22,20 +22,20 @@ service.interceptors.response.use(
         const {data,config} = response
         if(data.code==='200'){
             return data.data
+        }else if(data.code==='401'){
+            // 401：未登录 / token 过期，统一清缓存跳登录页
+            ElMessage.error(data.msg||'登录过期，请重新登录')
+            localStorage.removeItem('token')
+            localStorage.removeItem('UserInfo')
+            window.location.href='/auth/login'
+            return Promise.reject(data)
         }else{
-            if(data.code==='-1'){
-                if(!config.url?.includes('/login')){
-                    ElMessage.error(data.msg||'登陆过期，请重新登录')
-                    localStorage.removeItem('token')
-                    localStorage.removeItem('userInfo')
-                    window.location.href='/auth/login'
-                }else{
-                    ElMessage.error(data.msg||'登录过期，请重新登录')
-                    return Promise.reject('网络请求失败')
-                }
-            }
+            // 业务错误（-1 操作失败 / 400 参数错误 / BUSINESS_ERROR 等）：只弹窗不跳转
+            // 参数校验失败时后端会把具体字段错误放在 data 里（字符串），优先展示
+            const detail=typeof data.data==='string'?data.data:''
+            ElMessage.error(detail||data.message||data.msg||'请求失败')
+            return Promise.reject(data)
         }
-        return response
     },
     (error)=>{
         console.log('响应错误',error)

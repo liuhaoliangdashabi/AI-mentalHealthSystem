@@ -24,15 +24,29 @@
 
 <script setup>
 import {ref} from 'vue'
-import {useRoute} from 'vue-router'
+import { logout } from '@/api/admin'
 import { useAdminStore } from '@/stores/admin'
-
+import { useRoute,useRouter } from 'vue-router'
+import { ElMessage,ElMessageBox } from 'element-plus'
 const route=useRoute()
-
+const router=useRouter()
 const handleCommand=(command)=>{
     console.log(command)
     if(command==='logout'){
-
+        ElMessageBox.confirm('确定退出登录吗？','提示',{
+            confirmButtonText:'确定',
+            cancelButtonText:'取消',
+            type:'warning'
+        }).then(()=>{
+            logout().then(()=>{
+                localStorage.removeItem('token')
+                localStorage.removeItem('userInfo')
+                ElMessage.success('成功退出登录');
+                router.push('/auth/login')
+            })
+        }).catch(()=>{
+            ElMessage.info('已取消退出登录')
+        })
     }
 }
 

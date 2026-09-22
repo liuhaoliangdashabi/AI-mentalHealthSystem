@@ -41,7 +41,7 @@
             layout="prev,pager,next"
             :total="pagination.total"
             @change="handleChange"/>
-            <ArticleDialog v-model:modelValue="dialogVisible" :article="currentArticle" :categories="categories" @success="handleSuccess"/>
+        <ArticleDialog v-model:modelValue="dialogVisible" :article="currentArticle" :categories="categories" @success="handleSuccess"/>
     </div>
 </template>
 

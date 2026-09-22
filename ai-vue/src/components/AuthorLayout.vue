@@ -24,13 +24,14 @@ const iconUrl=new URL('@/assets/robot-fill.png',import.meta.url).href
 <style lang="scss" scoped>
 .auth-layout {
     display: flex;
+    height:100vh;
     .left-section {
         display: flex;
         justify-content: center;
         align-items: center;
         flex: 1;
         background: linear-gradient(90deg, rgb(74, 156, 140) 0%, rgb(61, 138, 122) 100%) rgba(74, 156, 140, 0.95);
-        height: 100vh;
+        height: 100%;
         .content {
             display: flex;
             flex-direction: column;
@@ -44,7 +45,8 @@ const iconUrl=new URL('@/assets/robot-fill.png',import.meta.url).href
             }
             .text {
                 margin-bottom: 20px;
-                width: 460px;
+                max-width: 460px;
+                width: 100%;
                 font-size: 20px;
                 color: #fff;
                 text-align: center;
@@ -64,10 +66,10 @@ const iconUrl=new URL('@/assets/robot-fill.png',import.meta.url).href
     }
     .right-section {
         display: flex;
+        overflow:auto;
         justify-content: center;
-        align-items: center;
         flex: 1;
-        height: 100vh;
+        height: 100%;
         background-color: #fff;
     }
 }

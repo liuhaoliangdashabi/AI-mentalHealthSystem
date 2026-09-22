@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import {ElMessage} from 'element-plus'
 import BackendLayout from '../components/BackendLayout.vue';
 import AuthorLayout from '../components/AuthorLayout.vue';
+import FrontendLayout from '../components/FrontendLayout.vue';
 const backendRoutes=[
     {
         path:'/back',
@@ -36,7 +38,7 @@ const backendRoutes=[
                 path:'emotional',
                 component:()=>import('@/views/emotional.vue'),
                 meta:{
-                    title:'情感分析',
+                    title:'情绪日志',
                     icon:'User'
                 }
             }
@@ -44,6 +46,7 @@ const backendRoutes=[
     },{
         path:'/auth',
         component:AuthorLayout,
+        redirect:'/auth/login',
         children:[
             {
                 path:'login',
@@ -62,8 +65,60 @@ const backendRoutes=[
         ]
     }
 ]
+const frontendRoutes=[
+    {
+        path:'/',
+        component:FrontendLayout,
+        children:[
+            {
+                path:'',
+                component:()=>import('@/views/home.vue')
+            },
+            {
+                path:'consultation',
+                component:()=>import('@/views/consultation.vue')
+            },{
+                path:'emotiondiary',
+                component:()=>import('@/views/emotionDiary.vue')
+            },{
+                path:'knowledge',
+                component:()=>import('@/views/frontendKnowledge.vue')
+            }
+        ]
+    }
+]
 const router=createRouter({
     history:createWebHistory(),
-    routes:backendRoutes
+    routes:[...backendRoutes,...frontendRoutes]
 })
+
+//路由前置守卫
+router.beforeEach((to,from,next)=>{
+    const token=localStorage.getItem('token')
+    if(token){
+        const userInfo=JSON.parse(localStorage.getItem('userInfo'))
+        if(userInfo.userType==2){
+            if(to.path.startsWith('/back')){
+                next()
+            }else{
+                next('/back/dashboard')
+            }
+        }else if(userInfo.userType==1){
+            if(to.path.startsWith('/back')||to.path.startsWith('/auth')){
+                next('/')
+            }else{
+                next()
+            }
+        }
+    }else{
+        if(to.path.startsWith('/back')){
+            next('/auth/login')
+            ElMessage.error('您还未登录，请先登录')
+        }else{
+            next()
+        }
+    }
+})
+
+
 export default router;

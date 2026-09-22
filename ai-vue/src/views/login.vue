@@ -28,7 +28,7 @@
                 </el-button>
             </el-form>
             <div class="footer">
-                <p>还没有账户？<router-link to="auth/register">去注册</router-link></p>
+                <p>还没有账户？<router-link to="/auth/register">去注册</router-link></p>
             </div>
         </div>
     </div>
@@ -68,11 +68,12 @@ const submitForm=async(formEl)=>{
                     if(data.userInfo.userType==2){
                         router.push('/back')
                     }else{
-
+                        router.push('/')
                     }
                     
                 }
             }).catch((err)=>{
+                // 错误原因已由响应拦截器统一弹出，这里仅记录
                 console.error('登录失败',err)
                 ElMessage.error('登录失败')
             })
