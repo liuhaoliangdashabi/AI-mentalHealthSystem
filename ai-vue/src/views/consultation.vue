@@ -33,7 +33,7 @@
             <!-- 聊天消息区域 -->
             <div class="chat-messages">
                 <!-- 欢迎用语 -->
-                <div class="message-item ai-message" v-if="message.length===0">
+                <div class="message-item ai-message" v-if="sumMessage.length===0">
                     <div class="message-avatar">
                         <el-image :src="iconUrl" style="width:18px;height:18px;"/>
                     </div>
@@ -45,20 +45,91 @@
                     </div>
                 </div>
             </div>
+            <!-- 校园输入区域 -->
+             <div class="chat-input">
+                <div class="input-container">
+                    <el-input
+                        v-model="userMessage"
+                        placeholder="请输入您想要分享的内容…"
+                        type="textarea"
+                        :rows="5"
+                        :disabled="isAiTyping"
+                        @keydown="handleKeyDown"
+                        class="message-input"
+                        clearable>
+                    </el-input>
+                </div>
+                <el-button type="primary" class="send-btn" @click="sendMessage">
+                    <el-icon><Promotion/></el-icon>
+                </el-button>
+             </div>
         </div>
     </div>
 </template>
 
 <script setup>
 import {ref,reactive,onMounted} from 'vue'
+import {startSession} from '@/api/frontend'
+import { ElMessage,ElMessageBox } from 'element-plus'
 
+
+const currentSession=ref(null)
 const iconUrl=new URL('@/assets/robot-fill.png',import.meta.url).href
 const iconUrl1=new URL('@/assets/like.png',import.meta.url).href
-const message=ref([])
+const sumMessage=ref([])
+const userMessage=ref('')
+const isAiTyping=ref(false)
 
+
+
+//新建会话
 const createNewFrontendSession=()=>{
-
+    //创建新的会话对象
+    const newSession={
+        sessionId:`temp_${Date.now()}`,
+        status:'TEMP',
+        sessionTime:`新对话`
+    }
+    currentSession.value=newSession
 }
+const sendMessage=()=>{
+    if(!userMessage.value.trim()){
+        ElMessage.warning('请输入内容，再问小暖哦')
+        return
+    }
+    if(isAiTyping.value){
+        ElMessage.error('小暖正在说话，请稍后')
+        return
+    }
+    const message=userMessage.value.trim()
+    userMessage.value=''
+    
+    //若没有会话/临时会话，调用接口，创建一个新的会话记录
+    if(currentSession.value.status==='TEMP'){
+        startNewSession(message)
+    }
+}
+const startNewSession=(message)=>{
+    //构建一个会话参数
+    const sessionParams={
+        initialMessage:message
+    }
+    //创建一个新的会话，这个也要归档（好像还没有归档的意思）
+    if(currentSession.value.sessionTitle==='新对话'){
+        sessionParams.sessionTitle=`宁渡AI助手 - ${new Date().toLocaleString()}`
+    }else{
+        sessionParams.sessionTitle=currentSession.value.sessionTitle
+    }
+    startSession(sessionParams).then(()=>{
+    })
+}
+
+const handleKeyDown=()=>{
+    
+}
+onMounted(()=>{
+    createNewFrontendSession()
+})
 </script>
 
 <style lang="scss" scoped>
