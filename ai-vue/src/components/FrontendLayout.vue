@@ -74,12 +74,14 @@ onMounted(()=>{
     min-height: 100%;
     .navbar-container {
         width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
         box-sizing: border-box;
-        padding: 10px 14%;
+        padding: 10px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 40px;
+        gap: 20px;
         .brand-section {
             display: flex;
             align-items: center;
@@ -95,12 +97,14 @@ onMounted(()=>{
         .nav-section {
             display: flex;
             align-items: center;
-            gap: 40px;
-            flex-shrink: 0;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
             .nav-link {
                 color: #4b5563;
                 font-size: 16px;
                 font-weight: 500;
+                white-space: nowrap;
                 &:hover {
                     color: #4A90E2;
                 }
