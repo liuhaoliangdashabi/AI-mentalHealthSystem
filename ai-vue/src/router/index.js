@@ -78,7 +78,7 @@ const frontendRoutes=[
                 path:'consultation',
                 component:()=>import('@/views/consultation.vue')
             },{
-                path:'emotiondiary',
+                path:'emotion-diary',
                 component:()=>import('@/views/emotionDiary.vue')
             },{
                 path:'knowledge',
