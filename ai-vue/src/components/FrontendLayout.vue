@@ -1,0 +1,132 @@
+<template>
+    <div class="frontend-layout">
+        <div class="navbar-container">
+            <div class="brand-section">
+                <el-image :src="iconUrl" style="width:45px;height:45px"
+                    alt="品牌logo" class="brand-logo"/>
+                    <h1 class="brand-name">心理健康AI助手</h1>
+            </div>
+            <div class="nav-section">
+                <router-link to="/" class="nav-link">首页</router-link>
+                <router-link to="/consultation" class="nav-link" v-if="isLoggedIn">AI咨询</router-link>
+                <router-link to="/emotion-diary" class="nav-link" v-if="isLoggedIn">情绪日记</router-link>
+                <router-link to="/knowledge" class="nav-link">知识库</router-link>
+                <el-button class="logout-btn" type="primary" 
+                    @click="handleLogout" v-if="isLoggedIn">
+                    退出登录
+                </el-button>
+                <template v-else>
+                    <router-link to="auth/login" class="nav-link">登录</router-link>
+                    <router-link to="auth/register" class="nav-link">
+                        <el-button type="primary">注册</el-button>
+                    </router-link>
+                </template>
+            </div>
+        </div>
+        <div class="main-container">
+            <router-view></router-view>
+        </div>
+        <div class="footer-container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 心理健康AI助手，All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import {ref,reactive,onMounted} from 'vue'
+import {logout} from '@/api/admin'
+import { ElMessage,ElMessageBox } from 'element-plus'
+import { useRouter } from 'vue-router'
+
+const router=useRouter()
+const iconUrl=new URL('@/assets/机器人.png',import.meta.url).href
+const isLoggedIn=ref(false)
+
+const handleLogout=()=>{
+    ElMessageBox.confirm('确定退出登录吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+    }).then(() => {
+        logout().then(()=>{
+            localStorage.removeItem('token')
+            localStorage.removeItem('userInfo')
+            isLoggedIn.value=false
+            router.push('/auth/login')
+            ElMessage.success('退出登录成功')
+        })
+    }).catch(()=>{
+        ElMessage.info('取消退出登录')
+    })
+}
+onMounted(()=>{
+    isLoggedIn.value=localStorage.getItem('token')!==null
+})
+</script>
+
+<style lang="scss" scoped>
+.frontend-layout {
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    .navbar-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        box-sizing: border-box;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        .brand-section {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            .brand-name {
+                margin-left: 10px;
+                font-size: 24px;
+                font-weight: 600;
+                color: #333;
+                white-space: nowrap;
+            }
+        }
+        .nav-section {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            .nav-link {
+                color: #4b5563;
+                font-size: 16px;
+                font-weight: 500;
+                white-space: nowrap;
+                &:hover {
+                    color: #4A90E2;
+                }
+            }
+        }
+    }
+    .main-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .footer-container {
+        background: #1f2937;
+        color: white;
+        padding: 15px 0;
+        margin-top: auto;
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 10px;
+            text-align: center;
+        }
+    }
+}
+</style>
