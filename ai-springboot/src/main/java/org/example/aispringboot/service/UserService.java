@@ -8,6 +8,8 @@ import org.example.aispringboot.common.Result;
 import org.example.aispringboot.entity.User;
 import org.example.aispringboot.exception.BusinessException;
 import org.example.aispringboot.mapper.UserMapper;
+import org.example.aispringboot.service.convert.UserConvert;
+import org.example.aispringboot.util.JwtTokenUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +20,7 @@ public class UserService {
 
     private final BCryptPasswordEncoder passwordEncoder=new BCryptPasswordEncoder();
 
-    public Result<UserLoginResponseDTO> login(UserLoginCommandDTO commandDTO){
+    public UserLoginResponseDTO login(UserLoginCommandDTO commandDTO){
         //构建查询条件
         LambdaQueryWrapper<User> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUsername,commandDTO.getUsername())
@@ -26,20 +28,23 @@ public class UserService {
                 .eq(User::getEmail,commandDTO.getUsername());
 
         User user=userMapper.selectOne(queryWrapper);
-        System.out.println(user);
 
         if(user==null){
             throw new BusinessException("查找的用户不存在");
-        }else{
-            String inputPassword=commandDTO.getPassword().trim();
-            if(!passwordEncoder.matches(inputPassword,user.getPassword())){
-                throw new BusinessException("密码错误");
-            }
-            if(!user.isActive()){
-                throw new BusinessException("用户已被禁用，请联系管理员");
-            }
-
         }
-        return null;
+
+        String inputPassword=commandDTO.getPassword().trim();
+        if(!passwordEncoder.matches(inputPassword,user.getPassword())){
+            throw new BusinessException("密码错误");
+        }
+        if(!user.isActive()){
+            throw new BusinessException("用户已被禁用，请联系管理员");
+        }
+
+        String token= JwtTokenUtil.generateToken(user.getId(),user.getUsername(),user.getUserType());
+
+        UserLoginResponseDTO.UserDetailResponseDTO userInfo=UserConvert.entityToDetailResponse(user);
+
+        return UserConvert.buildLoginResponse(token,userInfo);
     }
 }

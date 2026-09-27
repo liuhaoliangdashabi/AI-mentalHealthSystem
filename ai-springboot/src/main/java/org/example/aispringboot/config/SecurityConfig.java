@@ -17,7 +17,9 @@ public class SecurityConfig {
     //白名单
     private static final String[] PUBLIC_PATHS={
             "/",
-            "/api/user/login"
+            "/api/user/login",
+            "/api/user/add",
+            "/error"
     };
 
     @Bean

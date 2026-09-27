@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.aispringboot.enumClass.UserStatus;
+import org.example.aispringboot.enumClass.UserType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -97,32 +98,32 @@ public class User {
 //        return UserStatus.DISABLED.getCode().equals(this.status);
 //    }
 //
-//    /**
-//     * 获取显示名称（优先显示昵称，否则显示用户名）
-//     */
-//    public String getDisplayName() {
-//        return nickname != null && !nickname.trim().isEmpty() ? nickname : username;
-//    }
-//
-//    /**
-//     * 获取用户类型显示名称
-//     */
-//    public String getUserTypeDisplayName() {
-//        try {
-//            return UserType.fromCode(userType).getDescription();
-//        } catch (IllegalArgumentException e) {
-//            return "未知";
-//        }
-//    }
-//
-//    /**
-//     * 获取用户状态显示名称
-//     */
-//    public String getStatusDisplayName() {
-//        try {
-//            return UserStatus.fromCode(status).getDescription();
-//        } catch (IllegalArgumentException e) {
-//            return "未知";
-//        }
-//    }
+    /**
+     * 获取显示名称（优先显示昵称，否则显示用户名）
+     */
+    public String getDisplayName() {
+        return nickname != null && !nickname.trim().isEmpty() ? nickname : username;
+    }
+
+    /**
+     * 获取用户类型显示名称
+     */
+    public String getUserTypeDisplayName() {
+        try {
+            return UserType.fromCode(userType).getDescription();
+        } catch (IllegalArgumentException e) {
+            return "未知";
+        }
+    }
+
+    /**
+     * 获取用户状态显示名称
+     */
+    public String getStatusDisplayName() {
+        try {
+            return UserStatus.fromCode(status).getDescription();
+        } catch (IllegalArgumentException e) {
+            return "未知";
+        }
+    }
 }

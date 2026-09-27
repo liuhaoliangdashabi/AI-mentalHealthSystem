@@ -1,10 +1,10 @@
-package org.example.aispringboot.control;
+package org.example.aispringboot.controller;
 
 import jakarta.validation.Valid;
 import org.example.aispringboot.DTO.command.UserLoginCommandDTO;
+import org.example.aispringboot.DTO.command.UserRegisterCommandDTO;
 import org.example.aispringboot.DTO.response.UserLoginResponseDTO;
 import org.example.aispringboot.common.Result;
-import org.example.aispringboot.entity.User;
 import org.example.aispringboot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,8 +20,12 @@ public class UserController {
 
     @PostMapping("/login")
     public Result<UserLoginResponseDTO> login(@Valid @RequestBody UserLoginCommandDTO commandDTO){
-        Result<UserLoginResponseDTO> result=userService.login(commandDTO);
-        System.out.println(result);
-        return result;
+        UserLoginResponseDTO responseDTO=userService.login(commandDTO);
+        return Result.success(responseDTO);
+    }
+
+    @PostMapping("/add")
+    public Result<UserLoginResponseDTO.UserDetailResponseDTO> register(@Valid @RequestBody UserRegisterCommandDTO commandDTO){
+        return null;
     }
 }
