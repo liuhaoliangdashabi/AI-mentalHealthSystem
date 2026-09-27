@@ -3,6 +3,7 @@ package org.example.aispringboot.DTO.command;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 public class UserLoginCommandDTO {
@@ -11,5 +12,6 @@ public class UserLoginCommandDTO {
     private String username;
     @NotBlank(message="密码不能为空")
     @Size(max=100,message="密码长度在6到50个字符之间")
+    @ToString.Exclude
     private String password;
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class JwtConfig {
     private String secret;
     private Long expiration;
-    private Integer refreshExpiration;
+    private Long refreshExpiration;//Integer装毫秒有溢出风险
     private String header;
     private String tokenPrefix;
 }

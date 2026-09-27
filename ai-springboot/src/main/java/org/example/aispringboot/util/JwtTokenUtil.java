@@ -2,12 +2,14 @@ package org.example.aispringboot.util;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.config.JwtConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+@Slf4j
 @Component
 public class JwtTokenUtil implements ApplicationContextAware {
     private static final String ISSUER="mental-health-assistant";
@@ -28,6 +30,7 @@ public class JwtTokenUtil implements ApplicationContextAware {
     //生成token
     public static String generateToken(Long userId,String username,Integer roleType){
         try {
+            log.debug("现在正在生成token");
             //获取配置项（Autowired/注入到上下文()）
             JwtConfig jwtConfig=getJwtConfig();
             //生成签名算法——调用HMAC256
@@ -45,6 +48,7 @@ public class JwtTokenUtil implements ApplicationContextAware {
                     .sign(algorithm);
             return token;
         } catch (Exception e) {
+            log.info("生成token失败，错误原因：{}",e);
             throw new RuntimeException("生成token失败，原因：",e);
         }
     }

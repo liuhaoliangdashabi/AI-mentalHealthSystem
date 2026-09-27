@@ -1,8 +1,15 @@
 package org.example.aispringboot.service.convert;
 
+import lombok.extern.slf4j.Slf4j;
+import org.example.aispringboot.DTO.command.UserRegisterCommandDTO;
 import org.example.aispringboot.DTO.response.UserLoginResponseDTO;
 import org.example.aispringboot.entity.User;
+import org.example.aispringboot.enumClass.UserStatus;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Slf4j
 public class UserConvert {
     /**
      * User实体转换为详情响应DTO
@@ -43,6 +50,26 @@ public class UserConvert {
                 .roleType(userInfo.getUserType().toString())
                 .build();
     }
+
+
+
+    public static User registerCommandToEntity(UserRegisterCommandDTO commandDTO,String encodedPassword){
+        return User.builder()
+                .username(commandDTO.getUsername())
+                .email(commandDTO.getEmail())
+                .password(encodedPassword)
+                .nickname(commandDTO.getNickname())
+                .phone(commandDTO.getPhone())
+                .gender(commandDTO.getGender())
+                .birthday(commandDTO.getBirthday())
+                .userType(commandDTO.getUserType())
+                .status(UserStatus.NORMAL.getCode())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+
 
     /**
      * 获取性别显示名称
