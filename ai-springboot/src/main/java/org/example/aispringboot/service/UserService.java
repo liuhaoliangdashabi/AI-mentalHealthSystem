@@ -73,8 +73,8 @@ public class UserService {
         LambdaQueryWrapper<User> emailQuery=new LambdaQueryWrapper<>();
         emailQuery.eq(User::getEmail,commandDTO.getEmail());
         if(userMapper.selectCount(emailQuery)>0){
-            log.warn("用户名已存在，username={}",commandDTO.getUsername());
-            throw new BusinessException("用户名已存在");
+            log.warn("用户名/邮箱已存在，username={},email={}",commandDTO.getUsername(),commandDTO.getEmail());
+            throw new BusinessException("用户名/邮箱已存在");
         }
         //用户类型验证——传入类型要有意义
         if(!UserType.isValidCode(commandDTO.getUserType())){

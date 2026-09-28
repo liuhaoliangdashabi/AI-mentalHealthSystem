@@ -1,6 +1,8 @@
 package org.example.aispringboot.controller;
 
 import cn.hutool.json.JSONUtil;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.DTO.command.UserLoginCommandDTO;
@@ -8,6 +10,7 @@ import org.example.aispringboot.DTO.command.UserRegisterCommandDTO;
 import org.example.aispringboot.DTO.response.UserLoginResponseDTO;
 import org.example.aispringboot.common.Result;
 import org.example.aispringboot.service.UserService;
+import org.example.aispringboot.util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Resource
+    private JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/login")
     public Result<UserLoginResponseDTO> login(@Valid @RequestBody UserLoginCommandDTO commandDTO) {
@@ -35,6 +40,12 @@ public class UserController {
     @GetMapping("/current")
     public Result<UserLoginResponseDTO.UserDetailResponseDTO> getCurrentUser(){
         //从token中解析用户id
-        return null;
+        String token=jwtTokenUtil.getCurrentToken();
+        DecodedJWT jwt=JwtTokenUtil.verifyToken(token);
+        Long userId=jwt.getClaim("userId").asLong();
+
+        //调用service层获取用户详情
+        UserLoginResponseDTO.UserDetailResponseDTO result=userService.getUserById(userId);
+        return Result.success(result);
     }
 }

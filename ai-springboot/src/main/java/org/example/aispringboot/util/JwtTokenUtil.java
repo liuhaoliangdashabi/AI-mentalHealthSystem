@@ -13,6 +13,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Date;
 @Slf4j
@@ -70,6 +72,22 @@ public class JwtTokenUtil implements ApplicationContextAware {
         }
         return null;
 
+    }
+
+    //获取当前的token
+    public static String getCurrentToken(){
+        ServletRequestAttributes attributes =
+                (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+        if(attributes!=null){
+            HttpServletRequest request=attributes.getRequest();
+            String token=(String)request.getAttribute("jwtToken");
+            if(token!=null)return token;
+
+            //备用方案——请求头直接获取（extractTokenFromRequest）
+            String headerToken=extractTokenFromRequest(request);
+            return headerToken;
+        }
+        return null;
     }
 
     //验证token,并提取荷载部分

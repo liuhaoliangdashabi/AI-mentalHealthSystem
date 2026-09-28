@@ -32,7 +32,10 @@ public enum ResultCode {
     TOKEN_BLOCKED("A0230", "token已加入黑名单"),
     TOKEN_ACCESS_FORBIDDEN("A0231", "token已被禁止访问"),
     AUTHORIZED_ERROR("A0300", "访问权限异常"),
-    ACCESS_UNAUTHORIZED("A0301", "访问未授权");
+    ACCESS_UNAUTHORIZED("A0301", "访问未授权"),
+
+    //路径相关错误——
+    NOT_FOUND("B0120","路径错误");
 
     private String code;
     private String msg;
