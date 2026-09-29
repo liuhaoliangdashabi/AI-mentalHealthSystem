@@ -28,6 +28,20 @@ public class ConsultationMessageService {
 
     }
 
+    public ConsultationMessage saveAiMessage(Long sessionId,String content,String aiModel){
+        ConsultationMessage message=ConsultationMessage.builder()
+                .sessionId(sessionId)
+                .senderType(2)
+                .messageType(1)
+                .content(content)
+                .aiModel(aiModel)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        consultationMessageMapper.insert(message);
+        return message;
+    }
+
     public Integer getMessageCountBySessionId(Long sessionId){
         LambdaQueryWrapper<ConsultationMessage> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(ConsultationMessage::getSessionId,sessionId);
