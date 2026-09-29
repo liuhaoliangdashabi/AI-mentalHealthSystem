@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.AiService.PsychologicalSupportService;
 import org.example.aispringboot.AiService.StructOutPut;
 import org.example.aispringboot.DTO.command.ConsultationSectionCreateDTO;
@@ -22,7 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 import java.awt.*;
-
+import java.time.Duration;
+import java.util.Map;
+@Slf4j
 @RestController
 @RequestMapping("/api/psychological-chat")
 public class PsycholigicalChatController {
@@ -56,6 +59,29 @@ public class PsycholigicalChatController {
                     .build());
         }
 
-        return null;
+        return psychologicalSupportService.streamPsychologicalChat(streamDTO.getSessionId(),streamDTO.getUserMessage())
+                .map(fragment->{
+                    return ServerSentEvent.<String>builder()
+                            .event("message")
+                            .data(JSONUtil.toJsonStr(
+                                    Result.success(Map.of("content",fragment,"type","normal")))
+                            )
+                            .build();
+                })
+                .onErrorResume(error->{
+                    log.error("流式对话失败",error);
+                    return Flux.just(ServerSentEvent.<String>builder()
+                            .event("error")
+                            .data(JSONUtil.toJsonStr(
+                                    Result.error(ResultCode.SYSTEM_ERROR.getCode(),"AI服务暂不可用",null)
+                            ))
+                            .build());
+                })
+                .concatWith(Flux.just(ServerSentEvent.<String>builder()
+                        .event("done")
+                        .data("{}")
+                        .build()
+                ))
+                .delayElements(Duration.ofMillis(50));
     }
 }
