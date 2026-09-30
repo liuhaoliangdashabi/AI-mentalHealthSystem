@@ -6,16 +6,12 @@ import org.example.aispringboot.config.JwtConfig;
 
 @Slf4j
 public class UserUtil {
-    private final JwtTokenUtil jwtTokenUtil;
-
-    public JwtTokenUtil(JwtTokenUtil jwtTokenUtil){
-        this.jwtTokenUtil=jwtTokenUtil;
-    }
 
     public static Long getCurrentUserId(){
         //获取当前用户
-        String token=jwtTokenUtil.getCurrentToken();
-        DecodedJWT jwt= jwtTokenUtil.verifyToken(token);
+        String token=JwtTokenUtil.getCurrentToken();
+        if(token==null)return null;
+        DecodedJWT jwt= JwtTokenUtil.verifyToken(token);
         return jwt.getClaim("userId").asLong();
     }
 }
