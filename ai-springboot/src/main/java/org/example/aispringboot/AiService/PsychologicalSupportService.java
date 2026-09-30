@@ -17,6 +17,8 @@ import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @Slf4j
 @Service
 public class PsychologicalSupportService {
@@ -47,8 +49,11 @@ public class PsychologicalSupportService {
     }
 
     public Flux<String> streamPsychologicalChat(Long userId,String sessionId,String userMessage){
+        log.info("AI收到流式对话请求：userId={},sessionId={},消息长度={}",
+                userId,sessionId,userMessage==null?0:userMessage.length());
         //创建响应流
         return Flux.create(sink->{
+            AtomicBoolean firstToken=new AtomicBoolean(true);
             //sink.next()：发布数据
             //sink.complete()：完成流，告诉前端已完成
             //sink.error(exception)：发布错误
@@ -85,7 +90,11 @@ public class PsychologicalSupportService {
             String conversationId="conversation_"+sessionId;
             //存储AI完整响应
             StringBuilder fullResponse=new StringBuilder();
+
+            log.info("AI开始调用大模型（流式）：conversationId={},历史消息数={}",
+                    conversationId,messageCount);
             //用chatClient发送消息到OpenAI
+            long startTime=System.currentTimeMillis();
             chatClient.prompt()
                     .user(userMessage)
                     .advisors(advisorSpec ->
@@ -93,11 +102,16 @@ public class PsychologicalSupportService {
                     .stream()
                     .content()
                     .doOnNext(fragment->{
+                        if(firstToken.compareAndSet(true,false)){
+                            log.info("AI收到首个相应片段，首字耗时={}ms",System.currentTimeMillis()-startTime);
+                        }
                         fullResponse.append(fragment);
                         sink.next(fragment);
                     })
                     .doOnComplete(()->{
                         String completeRes=fullResponse.toString();
+                        log.info("【AI】大模型流式响应结束：conversationId={},共{}字,耗时={}ms",
+                                conversationId,completeRes.length(),System.currentTimeMillis()-startTime);
                         //消息存储到表中
                         consultationMessageService.saveAiMessage(dbSessionId,completeRes,"openai");
                         sink.complete();

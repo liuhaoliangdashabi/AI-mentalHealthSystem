@@ -28,8 +28,8 @@ import java.util.List;
 public class JwtAuthticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserService userService;
-
-
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     //确保每个请求只执行一次，不要在过滤器中反复打转
     @Override
@@ -48,12 +48,12 @@ public class JwtAuthticationFilter extends OncePerRequestFilter {
         log.info("获取到请求的URI和方法：request={},method={}",requestUri,method);
 
         //1.提取JWT token
-        String token=JwtTokenUtil.extractTokenFromRequest(request);
+        String token=jwtTokenUtil.extractTokenFromRequest(request);
         if(StringUtils.hasText(token)){
             //2.验证token并提取信息
-            JwtTokenUtil.TokenVeriticationResult validationResult= null;
+            JwtTokenUtil.TokenVeriticationResult validationResult;
             try {
-                validationResult = JwtTokenUtil.validateToken(token);
+                validationResult = jwtTokenUtil.validateToken(token);
             } catch (JWTVerificationException e) {
                 log.warn("token校验失败（过期/签名错误）,{}",e.getMessage());
                 clearSecurityContext();

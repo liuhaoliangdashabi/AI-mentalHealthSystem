@@ -24,9 +24,11 @@ public class UserService {
     private UserMapper userMapper;
 
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    public UserService(BCryptPasswordEncoder passwordEncoder){
+    public UserService(BCryptPasswordEncoder passwordEncoder,JwtTokenUtil jwtTokenUtil){
         this.passwordEncoder=passwordEncoder;
+        this.jwtTokenUtil=jwtTokenUtil;
     }
 
     public UserLoginResponseDTO login(UserLoginCommandDTO commandDTO){
@@ -52,7 +54,7 @@ public class UserService {
             throw new BusinessException("用户已被禁用，请联系管理员");
         }
         log.debug("判空、密码验证、用户状态均判断成功，准备生成token");
-        String token= JwtTokenUtil.generateToken(user.getId(),user.getUsername(),user.getUserType());
+        String token= jwtTokenUtil.generateToken(user.getId(),user.getUsername(),user.getUserType());
         UserLoginResponseDTO.UserDetailResponseDTO userInfo=UserConvert.entityToDetailResponse(user);
         log.debug("走到这里，用户信息和装填已经获取，准备装填并返回");
         return UserConvert.buildLoginResponse(token,userInfo);

@@ -1,7 +1,6 @@
 package org.example.aispringboot.controller;
 
 import cn.hutool.json.JSONUtil;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +10,6 @@ import org.example.aispringboot.DTO.response.UserLoginResponseDTO;
 import org.example.aispringboot.common.Result;
 import org.example.aispringboot.service.UserService;
 import org.example.aispringboot.util.JwtTokenUtil;
-import org.example.aispringboot.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +38,7 @@ public class UserController {
 
     @GetMapping("/current")
     public Result<UserLoginResponseDTO.UserDetailResponseDTO> getCurrentUser(){
-        Long userId= UserUtil.getCurrentUserId();
+        Long userId= jwtTokenUtil.getCurrentUserId();
         UserLoginResponseDTO.UserDetailResponseDTO result=userService.getUserById(userId);
         return Result.success(result);
     }

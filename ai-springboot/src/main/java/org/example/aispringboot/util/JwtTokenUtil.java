@@ -19,28 +19,18 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.Date;
 @Slf4j
 @Component
-public class JwtTokenUtil implements ApplicationContextAware {
+public class JwtTokenUtil {
     private static final String ISSUER="mental-health-assistant";
 
-    private static ApplicationContext applicationContext;
-
-    //静态工具类中获取Spring容器管理的Bean
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext){
-        JwtTokenUtil.applicationContext=applicationContext;
-    }
-
-
-    private static JwtConfig getJwtConfig(){
-        return applicationContext.getBean(JwtConfig.class);
+    private final JwtConfig jwtConfig;
+    public JwtTokenUtil(JwtConfig jwtConfig){
+        this.jwtConfig=jwtConfig;
     }
 
     //生成token
-    public static String generateToken(Long userId,String username,Integer roleType){
+    public String generateToken(Long userId,String username,Integer roleType){
         try {
             log.debug("现在正在生成token");
-            //获取配置项（Autowired/注入到上下文()）
-            JwtConfig jwtConfig=getJwtConfig();
             //生成签名算法——调用HMAC256
             Algorithm algorithm=Algorithm.HMAC256(jwtConfig.getSecret());
             //生成过期时间
@@ -56,13 +46,13 @@ public class JwtTokenUtil implements ApplicationContextAware {
                     .sign(algorithm);
             return token;
         } catch (Exception e) {
-            log.info("生成token失败，错误原因：{}",e);
+            log.warn("生成token失败，错误原因：{}",e.getMessage());
             throw new RuntimeException("生成token失败，原因：",e);
         }
     }
 
     //提取token
-    public static String extractTokenFromRequest(HttpServletRequest request){
+    public String extractTokenFromRequest(HttpServletRequest request){
         if(request==null){
             return null;
         }
@@ -75,7 +65,7 @@ public class JwtTokenUtil implements ApplicationContextAware {
     }
 
     //获取当前的token
-    public static String getCurrentToken(){
+    public String getCurrentToken(){
         ServletRequestAttributes attributes =
                 (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
         if(attributes!=null){
@@ -104,7 +94,7 @@ public class JwtTokenUtil implements ApplicationContextAware {
             this.valid = valid;
         }
     }
-    public static TokenVeriticationResult validateToken(String token){
+    public TokenVeriticationResult validateToken(String token){
         DecodedJWT jwt=verifyToken(token);
         Long userId=jwt.getClaim("userId").asLong();
         String username=jwt.getClaim("username").asString();
@@ -126,15 +116,21 @@ public class JwtTokenUtil implements ApplicationContextAware {
     }
 
     //验证token是否有效
-    public static DecodedJWT verifyToken(String token){
+    public DecodedJWT verifyToken(String token){
         if(!StringUtils.hasText(token)){
-            log.info("验证token无效——token为空,token={}",token);
             throw new JWTVerificationException("Token不能为空");
         }
         //token解码
-        JwtConfig jwtConfig=getJwtConfig();
         Algorithm algorithm=Algorithm.HMAC256(jwtConfig.getSecret());
         JWTVerifier verifyToken = JWT.require(algorithm).withIssuer(ISSUER).build();
         return verifyToken.verify(token);
+    }
+
+    public Long getCurrentUserId(){
+        //获取当前用户
+        String token=getCurrentToken();
+        if(token==null)return null;
+        DecodedJWT jwt= verifyToken(token);
+        return jwt.getClaim("userId").asLong();
     }
 }

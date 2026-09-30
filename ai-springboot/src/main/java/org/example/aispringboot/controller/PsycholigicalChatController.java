@@ -1,9 +1,6 @@
 package org.example.aispringboot.controller;
 
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.AiService.PsychologicalSupportService;
@@ -14,7 +11,6 @@ import org.example.aispringboot.common.Result;
 import org.example.aispringboot.common.ResultCode;
 import org.example.aispringboot.exception.BusinessException;
 import org.example.aispringboot.util.JwtTokenUtil;
-import org.example.aispringboot.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
@@ -24,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
-import java.awt.*;
 import java.time.Duration;
 import java.util.Map;
 @Slf4j
@@ -33,17 +28,19 @@ import java.util.Map;
 public class PsycholigicalChatController {
     @Autowired
     private PsychologicalSupportService psychologicalSupportService;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/session/start")
     public Result<StructOutPut.StreamChatSession> startSession(@Valid @RequestBody ConsultationSectionCreateDTO createDTO){
-        Long userId=UserUtil.getCurrentUserId();
+        Long userId= jwtTokenUtil.getCurrentUserId();
         StructOutPut.StreamChatSession session=psychologicalSupportService.startSession(userId,createDTO);
         return Result.success(session);
     }
 
     @PostMapping(value="/stream",produces = MediaType.TEXT_EVENT_STREAM_VALUE)//produces定义返回类型
     public Flux<ServerSentEvent<String>> streamChat(@Valid @RequestBody ConsultationStreamDTO streamDTO){
-        Long userId=UserUtil.getCurrentUserId();
+        Long userId= jwtTokenUtil.getCurrentUserId();
 
         if(userId==null){
             return Flux.just(ServerSentEvent.<String>builder()
