@@ -1,6 +1,7 @@
 package org.example.aispringboot.config;
 
 import cn.hutool.core.text.AntPathMatcher;
+import jakarta.servlet.DispatcherType;
 import org.example.aispringboot.util.JwtAuthticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,6 +59,8 @@ public class SecurityConfig {
                 })
                 //配置请求的授权规则
                 .authorizeHttpRequests(auth->auth
+                        //异步派发不该重复验证
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                         //公开路径，无需登录即可访问
                         .requestMatchers(PUBLIC_PATHS).permitAll()
                         //其他都要认证

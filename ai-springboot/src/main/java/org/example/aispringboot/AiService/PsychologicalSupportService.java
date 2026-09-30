@@ -4,16 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.DTO.command.ConsultationSectionCreateDTO;
 import org.example.aispringboot.DTO.response.ConsultationMessageResponseDTO;
 import org.example.aispringboot.entity.ConsultationSession;
+import org.example.aispringboot.exception.BusinessException;
 import org.example.aispringboot.mapper.ConsultationSessionMapper;
 import org.example.aispringboot.service.ConsultationMessageService;
 import org.example.aispringboot.service.ConsultationSessionsService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -27,8 +23,6 @@ public class PsychologicalSupportService {
     @Autowired
     @Qualifier("open-ai")
     private ChatClient chatClient;
-    @Autowired
-    private ChatMemory chatMemory;
     @Autowired
     private ConsultationSessionsService consultationSessionsService;
     @Autowired
@@ -60,13 +54,13 @@ public class PsychologicalSupportService {
             //sink.error(exception)：发布错误
             Long dbSessionId=extractSessionId(sessionId);
             if(dbSessionId==null){
-                sink.error(new RuntimeException("会话Id格式错误"));
+                sink.error(new BusinessException("会话Id格式错误"));
                 return;
             }
             ConsultationSession s=consultationSessionMapper.selectById(dbSessionId);
             //防止越权，拿别人的session
             if(s==null || !userId.equals(s.getUserId())){
-                sink.error(new RuntimeException("会话不存在或无权访问"));
+                sink.error(new BusinessException("会话不存在或无权访问"));
                 return;
             }
             boolean isInitialMessage=false;//是否为初始消息
@@ -81,7 +75,6 @@ public class PsychologicalSupportService {
                     isInitialMessage=true;
                 }
             }
-
             if(!isInitialMessage){
                 //该保存用户消息到数据库
                 consultationMessageService.saveUserMessage(dbSessionId,userMessage,null);
@@ -90,16 +83,10 @@ public class PsychologicalSupportService {
             //流式对话——基于ChatClient
             //生成对话记忆管理
             String conversationId="conversation_"+sessionId;
-            List<Message> userMessages=new ArrayList<>();
-            userMessages.add(new UserMessage(userMessage));
-            chatMemory.add(conversationId,userMessages);
-            Prompt prompt=new Prompt(List.of(
-                    new SystemMessage(PromptManage.PSYCHOLOGICAL_SUPPORT_SYSTEM_PROMPT)
-            ));
             //存储AI完整响应
             StringBuilder fullResponse=new StringBuilder();
             //用chatClient发送消息到OpenAI
-            chatClient.prompt(prompt)
+            chatClient.prompt()
                     .user(userMessage)
                     .advisors(advisorSpec ->
                             advisorSpec.param(ChatMemory.CONVERSATION_ID,conversationId))
@@ -113,27 +100,29 @@ public class PsychologicalSupportService {
                         String completeRes=fullResponse.toString();
                         //消息存储到表中
                         consultationMessageService.saveAiMessage(dbSessionId,completeRes,"openai");
-                        //AI回复也要添加到记忆体
-                        List<Message> aiMessages=new ArrayList<>();
-                        aiMessages.add(new AssistantMessage(completeRes));
-                        chatMemory.add(conversationId,aiMessages);
-
                         sink.complete();
                     })
                     .doOnError(error->{
                         log.error("流式对话失败",error);
                         sink.error(error);
                     })
-                    .subscribe();//订阅、启动流
+                    .subscribe(
+                            ignored->{},
+                            error->{}
+                    );//订阅、启动流
         });
 
     }
 
     public Long extractSessionId(String sessionId){
-        if(sessionId!=null && sessionId.startsWith("session_")){
-            return Long.parseLong(sessionId.substring("session_".length()));
+        if(sessionId==null || !sessionId.startsWith("session_")){
+            return null;
         }
-        return null;
+        try{
+            return Long.parseLong(sessionId.substring("session_".length()));
+        }catch (NumberFormatException e){
+            return null;
+        }
     }
 
 

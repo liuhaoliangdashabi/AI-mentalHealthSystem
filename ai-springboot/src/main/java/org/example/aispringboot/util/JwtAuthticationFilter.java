@@ -1,6 +1,7 @@
 package org.example.aispringboot.util;
 
 import cn.hutool.json.JSONUtil;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,7 +51,15 @@ public class JwtAuthticationFilter extends OncePerRequestFilter {
         String token=JwtTokenUtil.extractTokenFromRequest(request);
         if(StringUtils.hasText(token)){
             //2.验证token并提取信息
-            JwtTokenUtil.TokenVeriticationResult validationResult=JwtTokenUtil.validateToken(token);
+            JwtTokenUtil.TokenVeriticationResult validationResult= null;
+            try {
+                validationResult = JwtTokenUtil.validateToken(token);
+            } catch (JWTVerificationException e) {
+                log.warn("token校验失败（过期/签名错误）,{}",e.getMessage());
+                clearSecurityContext();
+                ResponseUtil.WriteError(response,ResultCode.TOKEN_EXPIRED);
+                return;
+            }
             if(validationResult!=null && validationResult.isValid()){
                 //3.根据解析出的Id查询验证用户状态
                 UserLoginResponseDTO.UserDetailResponseDTO user;

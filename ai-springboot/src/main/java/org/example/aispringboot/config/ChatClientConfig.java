@@ -1,7 +1,9 @@
 package org.example.aispringboot.config;
 
+import org.example.aispringboot.AiService.PromptManage;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.openai.OpenAiChatModel;
@@ -21,7 +23,7 @@ public class ChatClientConfig {
     public ChatClient openAiChatClient(OpenAiChatModel openAiChatModel){
         return ChatClient.builder(openAiChatModel)
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory()).build())
-                .defaultSystem("你是一个专业的心理疏导师，温和耐心，善于倾听，能够提供专业的心理支持和建议 ")
+                .defaultSystem(PromptManage.PSYCHOLOGICAL_SUPPORT_SYSTEM_PROMPT)
                 .build();
     }
 }

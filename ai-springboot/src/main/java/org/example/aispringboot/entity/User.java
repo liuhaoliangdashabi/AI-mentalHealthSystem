@@ -8,10 +8,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.aispringboot.enumClass.UserStatus;
 import org.example.aispringboot.enumClass.UserType;
 
@@ -47,6 +44,7 @@ public class User {
     // 密码
     @NotBlank(message = "密码不能为空")
     @Size(min = 6, max = 255, message = "密码长度必须在6到255个字符之间")
+    @ToString.Exclude
     private String password;
 
     // 昵称

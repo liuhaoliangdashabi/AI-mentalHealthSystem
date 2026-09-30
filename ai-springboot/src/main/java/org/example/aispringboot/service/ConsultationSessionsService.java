@@ -2,7 +2,6 @@ package org.example.aispringboot.service;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.DTO.command.ConsultationSectionCreateDTO;
 import org.example.aispringboot.entity.ConsultationSession;

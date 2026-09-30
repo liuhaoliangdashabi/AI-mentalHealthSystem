@@ -14,6 +14,7 @@ import org.example.aispringboot.common.Result;
 import org.example.aispringboot.common.ResultCode;
 import org.example.aispringboot.exception.BusinessException;
 import org.example.aispringboot.util.JwtTokenUtil;
+import org.example.aispringboot.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
@@ -32,26 +33,17 @@ import java.util.Map;
 public class PsycholigicalChatController {
     @Autowired
     private PsychologicalSupportService psychologicalSupportService;
-    @Resource
-    private JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/session/start")
     public Result<StructOutPut.StreamChatSession> startSession(@Valid @RequestBody ConsultationSectionCreateDTO createDTO){
-        //获取当前用户
-        String token=jwtTokenUtil.getCurrentToken();
-        DecodedJWT jwt= JwtTokenUtil.verifyToken(token);
-        Long userId=jwt.getClaim("userId").asLong();
-
+        Long userId=UserUtil.getCurrentUserId();
         StructOutPut.StreamChatSession session=psychologicalSupportService.startSession(userId,createDTO);
         return Result.success(session);
     }
 
     @PostMapping(value="/stream",produces = MediaType.TEXT_EVENT_STREAM_VALUE)//produces定义返回类型
     public Flux<ServerSentEvent<String>> streamChat(@Valid @RequestBody ConsultationStreamDTO streamDTO){
-        //获取当前用户
-        String token=jwtTokenUtil.getCurrentToken();
-        DecodedJWT jwt= JwtTokenUtil.verifyToken(token);
-        Long userId=jwt.getClaim("userId").asLong();
+        Long userId=UserUtil.getCurrentUserId();
 
         if(userId==null){
             return Flux.just(ServerSentEvent.<String>builder()
