@@ -12,6 +12,7 @@ import org.example.aispringboot.DTO.command.ConsultationSectionCreateDTO;
 import org.example.aispringboot.DTO.command.ConsultationStreamDTO;
 import org.example.aispringboot.common.Result;
 import org.example.aispringboot.common.ResultCode;
+import org.example.aispringboot.exception.BusinessException;
 import org.example.aispringboot.util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -59,7 +60,7 @@ public class PsycholigicalChatController {
                     .build());
         }
 
-        return psychologicalSupportService.streamPsychologicalChat(streamDTO.getSessionId(),streamDTO.getUserMessage())
+        return psychologicalSupportService.streamPsychologicalChat(userId,streamDTO.getSessionId(),streamDTO.getUserMessage())
                 .map(fragment->{
                     return ServerSentEvent.<String>builder()
                             .event("message")
@@ -69,12 +70,17 @@ public class PsycholigicalChatController {
                             .build();
                 })
                 .onErrorResume(error->{
+                    if(error instanceof BusinessException e){
+                        log.warn("[业务] 流式对话被拒绝：{}",e.getMessage());
+                        return Flux.just(ServerSentEvent.<String>builder()
+                                .event("error")
+                                .data(JSONUtil.toJsonStr(Result.error(e.getCode(),e.getMessage(),null)))
+                                .build());
+                    }
                     log.error("流式对话失败",error);
                     return Flux.just(ServerSentEvent.<String>builder()
                             .event("error")
-                            .data(JSONUtil.toJsonStr(
-                                    Result.error(ResultCode.SYSTEM_ERROR.getCode(),"AI服务暂不可用",null)
-                            ))
+                            .data(JSONUtil.toJsonStr(Result.error(ResultCode.SYSTEM_ERROR.getCode(),"AI服务暂不可用",null)))
                             .build());
                 })
                 .concatWith(Flux.just(ServerSentEvent.<String>builder()

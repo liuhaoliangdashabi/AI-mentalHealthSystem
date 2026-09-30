@@ -81,6 +81,7 @@ public class UserService {
             log.warn("用户类型无效，userType={}",commandDTO.getUserType());
             throw new BusinessException("无效的用户类型");
         }
+        commandDTO.setUserType(UserType.USER.getCode());
         String encodingPassword=passwordEncoder.encode(commandDTO.getPassword().trim());
         User user=UserConvert.registerCommandToEntity(commandDTO,encodingPassword);
         userMapper.insert(user);

@@ -8,7 +8,8 @@
             <TabSessionState>
               <option name="projectPath" value="C:\Users\HP\Desktop\学习资料（真的学习资料）\AI-mentalHealthSystem-master\ai-springboot" />
               <option name="provider" value="claude" />
-              <option name="sessionId" value="ece943ec-0e39-454e-bbd6-1b8cc9c9207d" />
+              <option name="sessionId" value="bf14b29f-dda5-43d2-bded-c3adc87c15e6" />
+              <option name="cwd" value="C:\Users\HP\Desktop\学习资料（真的学习资料）\AI-mentalHealthSystem-master\ai-springboot" />
               <option name="model" value="claude-sonnet-5[1m]" />
               <option name="permissionMode" value="default" />
             </TabSessionState>

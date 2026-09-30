@@ -1,11 +1,13 @@
 package org.example.aispringboot.service;
 
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.DTO.command.ConsultationSectionCreateDTO;
 import org.example.aispringboot.entity.ConsultationSession;
 import org.example.aispringboot.entity.User;
+import org.example.aispringboot.exception.BusinessException;
 import org.example.aispringboot.mapper.ConsultationSessionMapper;
 import org.example.aispringboot.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-
+@Slf4j
 @Service
 public class ConsultationSessionsService {
     @Autowired
@@ -37,6 +39,7 @@ public class ConsultationSessionsService {
             consultationSessionMapper.insert(session);
             return session;
         }
-        return null;
+        log.warn("查找会话失败——用户不存在：userId={}",userId);
+        throw new BusinessException("用户不存在");
     }
 }

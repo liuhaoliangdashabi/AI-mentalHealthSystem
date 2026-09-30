@@ -1,8 +1,10 @@
 package org.example.aispringboot.AiService;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.DTO.command.ConsultationSectionCreateDTO;
 import org.example.aispringboot.DTO.response.ConsultationMessageResponseDTO;
 import org.example.aispringboot.entity.ConsultationSession;
+import org.example.aispringboot.mapper.ConsultationSessionMapper;
 import org.example.aispringboot.service.ConsultationMessageService;
 import org.example.aispringboot.service.ConsultationSessionsService;
 import org.springframework.ai.chat.client.ChatClient;
@@ -19,7 +21,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Slf4j
 @Service
 public class PsychologicalSupportService {
     @Autowired
@@ -31,6 +33,8 @@ public class PsychologicalSupportService {
     private ConsultationSessionsService consultationSessionsService;
     @Autowired
     private ConsultationMessageService consultationMessageService;
+    @Autowired
+    private ConsultationSessionMapper consultationSessionMapper;
 
     public StructOutPut.StreamChatSession startSession(Long userId, ConsultationSectionCreateDTO createDTO){
         ConsultationSession consultationSession=consultationSessionsService.createSession(userId,createDTO);
@@ -48,7 +52,7 @@ public class PsychologicalSupportService {
         );
     }
 
-    public Flux<String> streamPsychologicalChat(String sessionId,String userMessage){
+    public Flux<String> streamPsychologicalChat(Long userId,String sessionId,String userMessage){
         //创建响应流
         return Flux.create(sink->{
             //sink.next()：发布数据
@@ -59,7 +63,12 @@ public class PsychologicalSupportService {
                 sink.error(new RuntimeException("会话Id格式错误"));
                 return;
             }
-
+            ConsultationSession s=consultationSessionMapper.selectById(dbSessionId);
+            //防止越权，拿别人的session
+            if(s==null || !userId.equals(s.getUserId())){
+                sink.error(new RuntimeException("会话不存在或无权访问"));
+                return;
+            }
             boolean isInitialMessage=false;//是否为初始消息
             //判断是否为初始消息，避免重复请求
             Integer messageCount=consultationMessageService.getMessageCountBySessionId(dbSessionId);
@@ -112,6 +121,7 @@ public class PsychologicalSupportService {
                         sink.complete();
                     })
                     .doOnError(error->{
+                        log.error("流式对话失败",error);
                         sink.error(error);
                     })
                     .subscribe();//订阅、启动流
