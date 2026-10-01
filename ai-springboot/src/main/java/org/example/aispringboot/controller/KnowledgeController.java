@@ -7,6 +7,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/knowledge")
 public class KnowledgeController {
-
-    public Result<>
 }

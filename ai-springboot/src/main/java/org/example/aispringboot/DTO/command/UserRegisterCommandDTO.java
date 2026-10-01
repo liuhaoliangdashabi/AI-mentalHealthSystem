@@ -43,5 +43,6 @@ public class UserRegisterCommandDTO {
     private String confirmPassword;
 
     private Integer gender;
+    @Builder.Default
     private Integer userType=1;
 }
