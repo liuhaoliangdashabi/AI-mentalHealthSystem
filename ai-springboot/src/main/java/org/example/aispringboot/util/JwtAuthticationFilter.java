@@ -45,7 +45,7 @@ public class JwtAuthticationFilter extends OncePerRequestFilter {
         //获取请求的URL和方法
         String requestUri=request.getRequestURI();
         String method=request.getMethod();
-        log.info("获取到请求的URI和方法：request={},method={}",requestUri,method);
+        log.debug("获取到请求的URI和方法：request={},method={}",requestUri,method);
 
         //1.提取JWT token
         String token=jwtTokenUtil.extractTokenFromRequest(request);
@@ -67,11 +67,11 @@ public class JwtAuthticationFilter extends OncePerRequestFilter {
                     user=userService.getUserById(validationResult.getUserId());
                 }catch(BusinessException e){
                     log.warn("token解析出的用户查不到，userId={}",validationResult.getUserId());
-                    clearSecurityContext();;
+                    clearSecurityContext();
                     ResponseUtil.WriteError(response,ResultCode.TOKEN_INVALID);
                     return;
                 }
-                log.info("打印查询到的用户信息：user={}", JSONUtil.parseObj(user));
+                log.debug("认证通过，userId={}",validationResult.getUserId());
                 if(user!=null && UserStatus.NORMAL.getCode().equals(user.getStatus())){
                     //4.创建SpringSecurity认证对象
                     List<SimpleGrantedAuthority> authorities=Collections.singletonList(
@@ -79,7 +79,7 @@ public class JwtAuthticationFilter extends OncePerRequestFilter {
                     );
                     //5.创建UsernamePasswordAuthenticationToken
                     UsernamePasswordAuthenticationToken authcation=new UsernamePasswordAuthenticationToken(
-                            validationResult.getUsername(),//用户名作为主体信息
+                            user,
                             null,//使用JWT，密码可不设置
                             authorities
                     );
@@ -88,19 +88,19 @@ public class JwtAuthticationFilter extends OncePerRequestFilter {
                     //7.token存储到请求的属性中——确保截取的token一定没问题了，再还回去
                     request.setAttribute("jwtToken",token);
                 }else{
-                    log.info("user数据或user状态有误：user={}",user);
+                    log.warn("user数据或user状态有误：userId={}",user.getId());
                     clearSecurityContext();
                     ResponseUtil.WriteError(response,ResultCode.TOKEN_ACCESS_FORBIDDEN);
                     return;
                 }
             }else{
-                log.info("token解析出来有问题，准备清除上下文，然后错误信息,token={}",token);
+                log.warn("token解析出来有问题(userId无效)");
                 clearSecurityContext();
                 ResponseUtil.WriteError(response, ResultCode.TOKEN_INVALID);
                 return;
             }
         }else{
-            log.info("提取token失败，token={}，准备清除上下文，然后错误信息",token);
+            log.debug("提取token失败：请求未携带token");
             clearSecurityContext();
             ResponseUtil.WriteError(response, ResultCode.ACCESS_UNAUTHORIZED);
             return;

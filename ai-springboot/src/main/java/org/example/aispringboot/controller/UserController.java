@@ -11,6 +11,7 @@ import org.example.aispringboot.common.Result;
 import org.example.aispringboot.service.UserService;
 import org.example.aispringboot.util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -24,22 +25,23 @@ public class UserController {
 
     @PostMapping("/login")
     public Result<UserLoginResponseDTO> login(@Valid @RequestBody UserLoginCommandDTO commandDTO) {
-        log.info("登录请求的controller层，username = {}", commandDTO.getUsername());
+        log.debug("登录请求的controller层，username = {}", commandDTO.getUsername());
         UserLoginResponseDTO responseDTO = userService.login(commandDTO);
         return Result.success(responseDTO);
     }
 
     @PostMapping("/add")
     public Result<UserLoginResponseDTO.UserDetailResponseDTO> register(@Valid @RequestBody UserRegisterCommandDTO commandDTO) {
-        log.info("注册请求的controller层：{}", JSONUtil.parseObj(commandDTO));
+        log.debug("注册请求的controller层：{}", commandDTO);
         UserLoginResponseDTO.UserDetailResponseDTO result = userService.register(commandDTO);
         return Result.success(result);
     }
 
     @GetMapping("/current")
-    public Result<UserLoginResponseDTO.UserDetailResponseDTO> getCurrentUser(){
-        Long userId= jwtTokenUtil.getCurrentUserId();
-        UserLoginResponseDTO.UserDetailResponseDTO result=userService.getUserById(userId);
-        return Result.success(result);
+    public Result<UserLoginResponseDTO.UserDetailResponseDTO> getCurrentUser(
+            @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user
+    ){
+        log.debug("通过token获取当前用户信息——从安全上下文中");
+        return Result.success(user);
     }
 }

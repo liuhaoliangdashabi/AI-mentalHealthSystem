@@ -1,5 +1,6 @@
 package org.example.aispringboot.util;
 
+import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.http.HttpStatus;
 import cn.hutool.json.JSONUtil;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,7 +35,7 @@ public class ResponseUtil {
             writer.print(jsonResponse);
             writer.flush();//相应内容写入到输出流中
         }catch(IOException e){
-            log.warn("写入响应失败，error={}",e);
+            log.warn("写入响应失败：{}", ExceptionUtil.getRootCauseMessage(e));
         }
     }
 

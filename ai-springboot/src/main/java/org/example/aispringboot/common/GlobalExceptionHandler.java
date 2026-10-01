@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Result<?>> handleNotReadable(HttpMessageNotReadableException e){
-        log.warn("掉进了请求体解析异常捕获，多半是 JSON 格式或编码有问题:{}",e.getMessage());
+        log.warn("掉进了请求体解析异常捕获:{}",e.getMessage());
         return json(Result.error(ResultCode.PARAM_INVALID.getCode(),"请求体格式不正确",null));
     }
 

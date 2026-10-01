@@ -1,5 +1,6 @@
 package org.example.aispringboot.util;
 
+import cn.hutool.core.exceptions.ExceptionUtil;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -8,9 +9,12 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.example.aispringboot.DTO.response.UserLoginResponseDTO;
 import org.example.aispringboot.config.JwtConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -46,8 +50,8 @@ public class JwtTokenUtil {
                     .sign(algorithm);
             return token;
         } catch (Exception e) {
-            log.warn("生成token失败，错误原因：{}",e.getMessage());
-            throw new RuntimeException("生成token失败，原因：",e);
+            log.error("生成token失败，错误原因：{}", ExceptionUtil.getRootCauseMessage(e));
+            throw new RuntimeException("生成token失败",e);
         }
     }
 
@@ -127,7 +131,13 @@ public class JwtTokenUtil {
     }
 
     public Long getCurrentUserId(){
-        //获取当前用户
+        //获取当前用户——从认证上下文里直接拿
+        Authentication auth= SecurityContextHolder.getContext().getAuthentication();
+        if(auth!=null && auth.getPrincipal() instanceof UserLoginResponseDTO.UserDetailResponseDTO user
+            && user.getId()!=null){
+            return user.getId();
+        }
+
         String token=getCurrentToken();
         if(token==null)return null;
         DecodedJWT jwt= verifyToken(token);
