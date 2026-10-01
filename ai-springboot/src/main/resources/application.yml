@@ -24,11 +24,21 @@ spring:
       audio:
         speech: none
         transcription: none
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000  # 24小时（毫秒）
+  header: token  # token头部名称
+#白名单：只有列出来的包开 debug（没列到的回落 root=INFO，第三方自动静音）
+#新增包且里面写了 log.debug，记得回来补一行
 logging:
   level:
-    org.example.aispringboot: debug
+    org.example.aispringboot.controller: debug
+    org.example.aispringboot.service: debug
+    org.example.aispringboot.util: debug
+    org.example.aispringboot.AiService: debug
+    org.example.aispringboot.common: debug
 ---
-#本地开发
+#模拟生产环境
 spring:
   config:
     activate:
@@ -36,12 +46,3 @@ spring:
 logging:
   level:
     org.example.aispringboot: info
-
-
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: 86400000  # 24小时（毫秒）
-  refresh-expiration: 604800000  # 7天（毫秒）
-  header: Authorization  # token头部名称
-  token-prefix: "Bearer "  # token前缀
-

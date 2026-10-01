@@ -60,7 +60,7 @@ public class JwtTokenUtil {
         if(request==null){
             return null;
         }
-        String tokenHeader=request.getHeader("token");
+        String tokenHeader=request.getHeader(jwtConfig.getHeader());
         if(StringUtils.hasText(tokenHeader)){
             return tokenHeader;
         }

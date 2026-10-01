@@ -93,7 +93,7 @@ public class UserService {
     public UserLoginResponseDTO.UserDetailResponseDTO getUserById(Long userId){
         User user=userMapper.selectById(userId);
         if(user==null){
-            log.warn("多半是token解析出来有问题，查询用户为null:userId={}",userId);
+            log.warn("查询用户不存在，userId={}",userId);
             throw new BusinessException("用户不存在");
         }
         return UserConvert.entityToDetailResponse(user);

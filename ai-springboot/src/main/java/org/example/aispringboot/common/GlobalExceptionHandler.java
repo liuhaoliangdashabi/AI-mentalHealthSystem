@@ -49,7 +49,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Result<?>> handleNotReadable(HttpMessageNotReadableException e){
-        log.warn("掉进了请求体解析异常捕获:{}",e.getMessage());
+        //e.getMessage() 会原样带出解析失败处的文本（实测：password 忘加引号 → 明文进日志），所以不打
+        log.warn("掉进了请求体解析异常捕获，多半是 JSON 格式错或 body 不是 JSON");
         return json(Result.error(ResultCode.PARAM_INVALID.getCode(),"请求体格式不正确",null));
     }
 
