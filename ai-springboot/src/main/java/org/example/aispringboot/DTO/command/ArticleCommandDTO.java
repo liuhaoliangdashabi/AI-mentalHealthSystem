@@ -3,9 +3,11 @@ package org.example.aispringboot.DTO.command;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class ArticleCommandDTO {
     @NotBlank(message = "文章标题不能为空")
     @Size(max=200,message = "文章标题不能超过200个字符")

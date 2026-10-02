@@ -46,11 +46,11 @@ public class EmotionDiary {
     @Size(max = 50,message = "主要情绪不能超过50个字符")
     private String dominantEmotion;
 
-    @Size(max = 100, message = "情绪触发因素不能超过100个字符")
+    @Size(max = 300, message = "情绪触发因素不能超过300个字符")
     @TableField("emotion_triggers")
     private String emotionTriggers;
 
-    @Size(max = 500, message = "日记内容不能超过500个字符")
+    @Size(max = 300, message = "日记内容不能超过300个字符")
     @TableField("diary_content")
     private String diaryContent;
 

@@ -1,0 +1,56 @@
+package org.example.aispringboot.service.convert;
+
+import jakarta.validation.Valid;
+import org.example.aispringboot.DTO.command.ArticleCommandDTO;
+import org.example.aispringboot.DTO.response.ArticleResponseDTO;
+import org.example.aispringboot.DTO.response.CategoryResponseDTO;
+import org.example.aispringboot.entity.KnowledgeArticle;
+import org.example.aispringboot.entity.KnowledgeCategory;
+import org.example.aispringboot.enumClass.ArticleStatus;
+
+import java.time.LocalDateTime;
+
+public class KnowledgeConvert {
+    public static CategoryResponseDTO categoryToResponse(KnowledgeCategory c){
+        return CategoryResponseDTO.builder()
+                .id(c.getId())
+                .categoryName(c.getCategoryName())
+                .build();
+    }
+
+    public static ArticleResponseDTO articleToResponse(KnowledgeArticle a,
+                                                       String authorName,
+                                                       String categoryName){
+        return ArticleResponseDTO.builder()
+                .id(a.getId())
+                .title(a.getTitle())
+                .content(a.getContent())
+                .coverImage(a.getCoverImage())
+                .categoryId(a.getCategoryId())
+                .status(a.getStatus())
+                .readCount(a.getReadCount())
+                .summary(a.getSummary())
+                .tags(a.getTags())
+                .publishedAt(a.getPublishedAt())
+                .updatedAt(a.getUpdatedAt())
+                .authorName(authorName)
+                .categoryName(categoryName)
+                .build();
+    }
+    public static KnowledgeArticle commandToEntity(ArticleCommandDTO cmd, Long authorId){
+        return KnowledgeArticle.builder()
+                .title(cmd.getTitle())
+                .content(cmd.getContent())
+                .coverImage(cmd.getCoverImage())
+                .categoryId(cmd.getCategoryId())
+                .summary(cmd.getSummary())
+                .tags(cmd.getTags())
+                .authorId(authorId)                       // ← 从 token 拿的
+                .readCount(0)                             // ← 新文章从 0 开始
+                .status(ArticleStatus.DRAFT.getCode())    // ← 新文章一律草稿
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+}

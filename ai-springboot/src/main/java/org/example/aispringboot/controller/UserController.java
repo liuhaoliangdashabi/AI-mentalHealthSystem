@@ -44,4 +44,9 @@ public class UserController {
         log.debug("通过token获取当前用户信息——从安全上下文中");
         return Result.success(user);
     }
+    @PostMapping("/logout")
+    public Result<Void> logout(){
+        log.debug("用户退出登录");
+        return Result.success();
+    }
 }

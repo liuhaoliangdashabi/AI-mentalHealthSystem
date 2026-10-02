@@ -18,6 +18,7 @@ public class ArticleResponseDTO {
     private String summary;
     private String tags;
     private LocalDateTime publishedAt;
+    private LocalDateTime updatedAt;
 
     private String categoryName;
     private String authorName;

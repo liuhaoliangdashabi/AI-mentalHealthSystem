@@ -10,7 +10,7 @@ const service=axios.create({
 const toLogin=(msg)=>{
     ElMessage.error(msg||'登录过期，请重新登录')
     localStorage.removeItem('token')
-    localStorage.removeItem('UserInfo')
+    localStorage.removeItem('userInfo')
     window.location.href='/auth/login'
 }
 
