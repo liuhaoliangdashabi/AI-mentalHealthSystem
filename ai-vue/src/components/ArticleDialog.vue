@@ -206,7 +206,7 @@ const handleSubmit=()=>{
         const submitData={...formData,tags:formData.tagArray.join(',')}
         submitData.id=businessId.value
         delete submitData.tagArray
-        if(!isEdit){
+        if(!isEdit.value){
             submitData.id=businessId.value
             createArticle(submitData).then(res=>{
                 loading.value=false

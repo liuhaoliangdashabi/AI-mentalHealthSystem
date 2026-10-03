@@ -6,12 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.DTO.command.ArticleCommandDTO;
 import org.example.aispringboot.DTO.command.ArticlePageQueryDTO;
 import org.example.aispringboot.DTO.command.ArticleStatusCommandDTO;
+import org.example.aispringboot.DTO.command.ConsultationPageQueryDTO;
 import org.example.aispringboot.DTO.response.ArticleResponseDTO;
 import org.example.aispringboot.DTO.response.CategoryResponseDTO;
+import org.example.aispringboot.DTO.response.ConsultationResponseDTO;
 import org.example.aispringboot.DTO.response.UserLoginResponseDTO;
 import org.example.aispringboot.common.Result;
+import org.example.aispringboot.entity.KnowledgeArticle;
 import org.example.aispringboot.service.KnowledgeCategoryService;
 import org.example.aispringboot.service.KnowledgeArticleService;
+import org.example.aispringboot.service.KnowledgeConsultationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +31,8 @@ public class KnowledgeController {
     private KnowledgeCategoryService categoryService;
     @Autowired
     private KnowledgeArticleService articleService;
+    @Autowired
+    private KnowledgeConsultationService consultationService;
 
     @GetMapping("/category/tree")
     public Result<List<CategoryResponseDTO>> categoryTree(
@@ -36,6 +42,8 @@ public class KnowledgeController {
         return Result.success(categoryService.listAll());
     }
 
+
+    //-----------------------------------Article相关
     @GetMapping("/article/page")
     public Result<IPage<ArticleResponseDTO>> articlePage(
             @Valid ArticlePageQueryDTO pageQueryDTO,
@@ -64,26 +72,37 @@ public class KnowledgeController {
         return Result.success();
     }
 
-//    @GetMapping("/article/{id}")
-//    public Result<Void> getArticleDetail(
-//                                         @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
-//        log.debug("Id={}获取文章详情");
-//
-//        return Result.success();
-//    }
+    @GetMapping("/article/{id}")
+    public Result<ArticleResponseDTO> getArticleDetail(@PathVariable String id,
+                                         @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
+        log.debug("Id={}获取文章articleId={}详情",user.getId(),id);
+        ArticleResponseDTO responseDTO=articleService.getArticleDetail(id);
+        return Result.success(responseDTO);
+    }
 
-//    @PutMapping("/article/{id}")
-//    public Result<> updateArticle(){
-//
-//    }
-//
-//    @PutMapping("/article/{id}/status")
-//    public Result<> changeArticleStatus(){
-//
-//    }
-//
-//    @DeleteMapping("/article/{id}")
-//    public Result<> deleteArticle(){
-//
-//    }
+    @PutMapping("/article/{id}")
+    public Result<Void> updateArticleDetail(@PathVariable String id,
+                                      @Valid @RequestBody ArticleCommandDTO commandDTO,
+                                      @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
+        log.debug("Id={}修改文章articleId={}详情",user.getId(),id);
+        articleService.putArticleDetail(id,commandDTO);
+        return Result.success();
+    }
+    @DeleteMapping("/article/{id}")
+    public Result<Void> deleteArticle(@PathVariable String id,
+                                      @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
+        log.debug("Id={}要删除articleId={}",user.getId(),id);
+        articleService.deleteArticle(id);
+        return Result.success();
+    }
+
+
+
+    //-------------------------------------Consultation相关
+    @GetMapping("/psychological-chat/sessions")
+    public Result<ConsultationResponseDTO> getConsultationPage(@Valid @RequestBody ConsultationPageQueryDTO queryDTO){
+        log.debug("查询心理会话列表，currentPage={}，size={}",queryDTO.getCurrentPage(),queryDTO.getSize());
+        ConsultationResponseDTO responseDTO=null;
+        return Result.success(responseDTO);
+    }
 }

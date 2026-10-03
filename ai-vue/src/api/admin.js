@@ -31,7 +31,7 @@ export function getArticleDetail(id){
 }
 
 export function updateArticle(id,data){
-    return service.put(`/knowledge/article${id}`,data)
+    return service.put(`/knowledge/article/${id}`,data)
 }
 
 export function changeArticleStatus(id,data){

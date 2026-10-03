@@ -53,4 +53,20 @@ public class KnowledgeConvert {
                 .build();
     }
 
+    public static KnowledgeArticle toUpdateEntity(String id, ArticleCommandDTO cmd){
+        return KnowledgeArticle.builder()
+                .id(id)                                   // ← 从路径拿
+                .title(cmd.getTitle())
+                .content(cmd.getContent())
+                .coverImage(cmd.getCoverImage())
+                .categoryId(cmd.getCategoryId())
+                .summary(cmd.getSummary())
+                .tags(cmd.getTags())
+                .updatedAt(LocalDateTime.now())
+                // authorId / readCount / status / createdAt 都不填
+                // → updateById 会跳过它们，保持原值
+                .build();
+    }
+
+
 }

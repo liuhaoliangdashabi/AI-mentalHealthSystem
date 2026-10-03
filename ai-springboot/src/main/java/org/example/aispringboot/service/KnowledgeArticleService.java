@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.example.aispringboot.DTO.command.ArticleCommandDTO;
 import org.example.aispringboot.DTO.command.ArticlePageQueryDTO;
 import org.example.aispringboot.DTO.command.ArticleStatusCommandDTO;
@@ -13,6 +14,9 @@ import org.example.aispringboot.DTO.response.ArticleResponseDTO;
 import org.example.aispringboot.DTO.response.UserLoginResponseDTO;
 import org.example.aispringboot.common.Result;
 import org.example.aispringboot.entity.KnowledgeArticle;
+import org.example.aispringboot.entity.KnowledgeCategory;
+import org.example.aispringboot.entity.User;
+import org.example.aispringboot.exception.BusinessException;
 import org.example.aispringboot.mapper.KnowledgeArticleMapper;
 import org.example.aispringboot.mapper.KnowledgeCategoryMapper;
 import org.example.aispringboot.mapper.UserMapper;
@@ -26,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class KnowledgeArticleService {
     @Autowired
@@ -57,10 +61,19 @@ public class KnowledgeArticleService {
         Map<Long,String>CategoryIdWithName=new HashMap<>();
         for(KnowledgeArticle a:page.getRecords()){
             if(!AuthorIdWithName.containsKey(a.getAuthorId())){
-                AuthorIdWithName.put(a.getAuthorId(),userMapper.selectById(a.getAuthorId()).getUsername());
+                User u=userMapper.selectById(a.getAuthorId());
+                if(u==null){
+                    log.warn("文章{}的作者{}不存在，可能是脏数据",a.getId(),a.getAuthorId());
+                }
+                AuthorIdWithName.put(a.getAuthorId(),u==null?null:u.getDisplayName());
+
             }
             if(!CategoryIdWithName.containsKey(a.getCategoryId())){
-                CategoryIdWithName.put(a.getCategoryId(),categoryMapper.selectById(a.getCategoryId()).getCategoryName());
+                KnowledgeCategory c=categoryMapper.selectById(a.getCategoryId());
+                if(c==null){
+                    log.warn("文章{}的分类{}不存在，可能是脏数据，请尽快查看",a.getId(),a.getCategoryId());
+                }
+                CategoryIdWithName.put(a.getCategoryId(),c==null?null:c.getCategoryName());
             }
         }
         return page.convert(a-> KnowledgeConvert.articleToResponse(
@@ -70,6 +83,9 @@ public class KnowledgeArticleService {
     }
 
     public void createArticle(@Valid ArticleCommandDTO commandDTO,Long id) {
+        if(categoryMapper.selectById(commandDTO.getCategoryId())==null){
+            throw new BusinessException(commandDTO.getCategoryId()+"分类不存在");
+        }
         KnowledgeArticle article=KnowledgeConvert.commandToEntity(commandDTO,id);
         articleMapper.insert(article);
     }
@@ -80,6 +96,35 @@ public class KnowledgeArticleService {
                 .set(KnowledgeArticle::getStatus, status.getStatus())
                 .set(KnowledgeArticle::getUpdatedAt, LocalDateTime.now());
         articleMapper.update(uw);
+    }
+
+    public ArticleResponseDTO getArticleDetail(String id) {
+        KnowledgeArticle a=articleMapper.selectById(id);
+        if(a==null)throw new BusinessException("id={}文章不存在");
+        User u=userMapper.selectById(a.getAuthorId());
+        if(u==null)log.warn("文章{}的作者{}不存在，可能是脏数据",id,a.getAuthorId());
+        KnowledgeCategory c=categoryMapper.selectById(a.getCategoryId());
+        if(c==null)log.warn("文章{}的分类{}不存在，可能是脏数据",id,a.getCategoryId());
+        return KnowledgeConvert.articleToResponse(a,u==null?null:u.getDisplayName(),
+                c==null?null:c.getCategoryName());
+    }
+
+    public void putArticleDetail(String articleId, @Valid ArticleCommandDTO commandDTO) {
+        KnowledgeArticle entity=KnowledgeConvert.toUpdateEntity(articleId,commandDTO);
+        int count=articleMapper.updateById(entity);
+        if(count==0){
+            log.warn("文章{}不存在",articleId);
+            throw new BusinessException("文章不存在");
+        }
+        log.debug("文章已更新：articleId={}",articleId);
+    }
+
+    public void deleteArticle(String articleId) {
+        int count=articleMapper.deleteById(articleId);
+        if(count==0){
+            log.warn("文章{}不存在",articleId);
+            throw new BusinessException("文章不存在");
+        }
     }
 }
 
