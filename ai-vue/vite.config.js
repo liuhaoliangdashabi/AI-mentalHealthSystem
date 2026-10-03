@@ -1,6 +1,7 @@
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
 import {resolve} from 'path'
+import {fileBaseUrl} from './src/config/index.js'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,7 +14,7 @@ export default defineConfig({
   server:{
     proxy:{
       '/api':{
-        target:'http://localhost:8080',
+        target:fileBaseUrl,
         changeOrigin:true
       }
     }

@@ -57,28 +57,37 @@ public class KnowledgeArticleService {
         }
 
         articleMapper.selectPage(page,qw);
-        Map<Long,String>AuthorIdWithName=new HashMap<>();
-        Map<Long,String>CategoryIdWithName=new HashMap<>();
-        for(KnowledgeArticle a:page.getRecords()){
-            if(!AuthorIdWithName.containsKey(a.getAuthorId())){
-                User u=userMapper.selectById(a.getAuthorId());
-                if(u==null){
-                    log.warn("文章{}的作者{}不存在，可能是脏数据",a.getId(),a.getAuthorId());
-                }
-                AuthorIdWithName.put(a.getAuthorId(),u==null?null:u.getDisplayName());
 
-            }
-            if(!CategoryIdWithName.containsKey(a.getCategoryId())){
-                KnowledgeCategory c=categoryMapper.selectById(a.getCategoryId());
-                if(c==null){
-                    log.warn("文章{}的分类{}不存在，可能是脏数据，请尽快查看",a.getId(),a.getCategoryId());
-                }
-                CategoryIdWithName.put(a.getCategoryId(),c==null?null:c.getCategoryName());
-            }
+        List<KnowledgeArticle> articles=page.getRecords();
+        if(articles.isEmpty()){
+            return page.convert(a->null);
         }
+
+        Set<Long> authorIds=articles.stream()
+                .map(KnowledgeArticle::getAuthorId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long,String> authorNameMap=authorIds.isEmpty()?Map.of():
+                userMapper.selectBatchIds(authorIds).stream()
+                        .collect(Collectors.toMap(User::getId,User::getDisplayName));
+        authorIds.removeAll(authorNameMap.keySet());
+        if(!authorIds.isEmpty())log.warn("这些作者id不存在，可能是脏数据：{}",authorIds);
+
+
+        Set<Long> categoryIds=articles.stream()
+                .map(KnowledgeArticle::getCategoryId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long,String> categoryNameMap=categoryIds.isEmpty()?Map.of():
+                categoryMapper.selectBatchIds(categoryIds).stream()
+                        .collect(Collectors.toMap(KnowledgeCategory::getId, KnowledgeCategory::getCategoryName));
+        categoryIds.removeAll(categoryNameMap.keySet());
+        if(!categoryIds.isEmpty())log.warn("这些作者id不存在，可能是脏数据:{}",categoryIds);
+
+
         return page.convert(a-> KnowledgeConvert.articleToResponse(
-                    a,AuthorIdWithName.get(a.getAuthorId()),
-                    CategoryIdWithName.get(a.getCategoryId()))
+                    a,authorNameMap.get(a.getAuthorId()),
+                    categoryNameMap.get(a.getCategoryId()))
         );
     }
 

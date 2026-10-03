@@ -1,9 +1,11 @@
 package org.example.aispringboot.service.convert;
 
-import jakarta.validation.Valid;
 import org.example.aispringboot.DTO.command.ArticleCommandDTO;
 import org.example.aispringboot.DTO.response.ArticleResponseDTO;
 import org.example.aispringboot.DTO.response.CategoryResponseDTO;
+import org.example.aispringboot.DTO.response.ConsultationSessionResponseDTO;
+import org.example.aispringboot.entity.ConsultationMessage;
+import org.example.aispringboot.entity.ConsultationSession;
 import org.example.aispringboot.entity.KnowledgeArticle;
 import org.example.aispringboot.entity.KnowledgeCategory;
 import org.example.aispringboot.enumClass.ArticleStatus;
@@ -69,4 +71,25 @@ public class KnowledgeConvert {
     }
 
 
+    public static ConsultationSessionResponseDTO ConsultationSessionToResponse(ConsultationSession session,
+                                                                               String userNickname,
+                                                                               Integer messageCount,
+                                                                               String lastMessageContent,
+                                                                               LocalDateTime lastMessageTime) {
+        return ConsultationSessionResponseDTO.builder()
+                .id(session.getId())
+                .userId(session.getUserId())
+                .userNickname(userNickname)
+                .sessionTitle(session.getSessionTitle())
+                .startedAt(session.getStartedAt())
+                .lastMessageContent(lastMessageContent)
+                .messageCount(messageCount)
+                .lastMessageTime(lastMessageTime)
+                .lastEmotionAnalysis(session.getLastEmotionAnalysis())
+                .lastEmotionUpdatedAt(session.getLastEmotionUpdatedAt())
+                .build();
+    }
+
+    public static Object messageToResponse(ConsultationMessage consultationMessage) {
+    }
 }

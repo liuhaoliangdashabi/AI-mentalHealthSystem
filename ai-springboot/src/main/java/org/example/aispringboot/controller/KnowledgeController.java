@@ -7,17 +7,12 @@ import org.example.aispringboot.DTO.command.ArticleCommandDTO;
 import org.example.aispringboot.DTO.command.ArticlePageQueryDTO;
 import org.example.aispringboot.DTO.command.ArticleStatusCommandDTO;
 import org.example.aispringboot.DTO.command.ConsultationPageQueryDTO;
-import org.example.aispringboot.DTO.response.ArticleResponseDTO;
-import org.example.aispringboot.DTO.response.CategoryResponseDTO;
-import org.example.aispringboot.DTO.response.ConsultationResponseDTO;
-import org.example.aispringboot.DTO.response.UserLoginResponseDTO;
+import org.example.aispringboot.DTO.response.*;
 import org.example.aispringboot.common.Result;
-import org.example.aispringboot.entity.KnowledgeArticle;
 import org.example.aispringboot.service.KnowledgeCategoryService;
 import org.example.aispringboot.service.KnowledgeArticleService;
 import org.example.aispringboot.service.KnowledgeConsultationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +20,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/knowledge")
+@RequestMapping("/api")
 public class KnowledgeController {
     @Autowired
     private KnowledgeCategoryService categoryService;
@@ -34,7 +29,7 @@ public class KnowledgeController {
     @Autowired
     private KnowledgeConsultationService consultationService;
 
-    @GetMapping("/category/tree")
+    @GetMapping("/knowledge/category/tree")
     public Result<List<CategoryResponseDTO>> categoryTree(
             @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user
     ){
@@ -44,16 +39,15 @@ public class KnowledgeController {
 
 
     //-----------------------------------Article相关
-    @GetMapping("/article/page")
+    @GetMapping("/knowledge/article/page")
     public Result<IPage<ArticleResponseDTO>> articlePage(
-            @Valid ArticlePageQueryDTO pageQueryDTO,
-            @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
-        log.debug("Id={}在分页查询文章列表",user.getId());
+            @Valid ArticlePageQueryDTO pageQueryDTO){
+        log.debug("分页查询文章列表");
         IPage<ArticleResponseDTO> articleList=articleService.selectPage(pageQueryDTO);
         return Result.success(articleList);
     }
 
-    @PostMapping("/article")
+    @PostMapping("/knowledge/article")
     public Result<Void> createArticle(
             @Valid @RequestBody ArticleCommandDTO commandDTO,
             @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
@@ -64,7 +58,7 @@ public class KnowledgeController {
         return Result.success();
     }
 
-    @PutMapping("/article/{id}/status")
+    @PutMapping("/knowledge/article/{id}/status")
     public Result<Void> putArticleStatus(@PathVariable("id") String articleId,@Valid @RequestBody ArticleStatusCommandDTO status,
                                          @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
         log.debug("Id={}获取文章详情",user.getId());
@@ -72,7 +66,7 @@ public class KnowledgeController {
         return Result.success();
     }
 
-    @GetMapping("/article/{id}")
+    @GetMapping("/knowledge/article/{id}")
     public Result<ArticleResponseDTO> getArticleDetail(@PathVariable String id,
                                          @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
         log.debug("Id={}获取文章articleId={}详情",user.getId(),id);
@@ -80,7 +74,7 @@ public class KnowledgeController {
         return Result.success(responseDTO);
     }
 
-    @PutMapping("/article/{id}")
+    @PutMapping("/knowledge/article/{id}")
     public Result<Void> updateArticleDetail(@PathVariable String id,
                                       @Valid @RequestBody ArticleCommandDTO commandDTO,
                                       @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
@@ -88,7 +82,7 @@ public class KnowledgeController {
         articleService.putArticleDetail(id,commandDTO);
         return Result.success();
     }
-    @DeleteMapping("/article/{id}")
+    @DeleteMapping("/knowledge/article/{id}")
     public Result<Void> deleteArticle(@PathVariable String id,
                                       @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
         log.debug("Id={}要删除articleId={}",user.getId(),id);
@@ -100,9 +94,17 @@ public class KnowledgeController {
 
     //-------------------------------------Consultation相关
     @GetMapping("/psychological-chat/sessions")
-    public Result<ConsultationResponseDTO> getConsultationPage(@Valid @RequestBody ConsultationPageQueryDTO queryDTO){
+    public Result<IPage<ConsultationSessionResponseDTO>> getConsultationPage(@Valid ConsultationPageQueryDTO queryDTO){
         log.debug("查询心理会话列表，currentPage={}，size={}",queryDTO.getCurrentPage(),queryDTO.getSize());
-        ConsultationResponseDTO responseDTO=null;
+        IPage<ConsultationSessionResponseDTO> responseDTO=consultationService.getConsultationPage(queryDTO);
+        return Result.success(responseDTO);
+    }
+
+    @GetMapping("/psychological-chat/sessions/{sessionId}/messages")
+    public Result<List<ConsultationMessageResponseDTO>> getConsultationDetail(@PathVariable Long sessionId,
+                                                                              @AuthenticationPrincipal UserLoginResponseDTO.UserDetailResponseDTO user){
+        log.debug("查询心理会话消息,sessionId={}",sessionId);
+        List<ConsultationMessageResponseDTO> responseDTO=consultationService.getConsultationDetail(sessionId,user);
         return Result.success(responseDTO);
     }
 }

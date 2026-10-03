@@ -1,11 +1,12 @@
 package org.example.aispringboot.DTO.response;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-
+@Builder
 @Data
-public class ConsultationResponseDTO {
+public class ConsultationSessionResponseDTO {
     // 会话ID
     private Long id;
 
